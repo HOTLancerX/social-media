@@ -246,7 +246,7 @@ export default function ReactionSummary({
                                                 className="flex items-center justify-between pt-3 first:pt-0 gap-3"
                                             >
                                                 <Link
-                                                    href={`/user/${item.userSlug || item.userId}`}
+                                                    href={`/${item.userSlug || item.userId}`}
                                                     onClick={() => setIsModalOpen(false)}
                                                     className="flex items-center gap-3 min-w-0 group flex-1"
                                                 >
@@ -285,7 +285,7 @@ export default function ReactionSummary({
                                                 </Link>
 
                                                 <Link
-                                                    href={`/user/${item.userSlug || item.userId}`}
+                                                    href={`/${item.userSlug || item.userId}`}
                                                     onClick={() => setIsModalOpen(false)}
                                                     className="px-3 py-1.5 bg-gray-100 hover:bg-blue-50 hover:text-blue-600 text-gray-700 text-xs font-bold rounded-xl transition shrink-0"
                                                 >

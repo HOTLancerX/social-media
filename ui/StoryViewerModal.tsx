@@ -322,7 +322,7 @@ export default function StoryViewerModal({
                     onClick={(e) => e.stopPropagation()}
                 >
                     <Link
-                        href={`/user/${userGroup.userSlug || userGroup.userId}`}
+                        href={`/${userGroup.userSlug || userGroup.userId}`}
                         className="flex items-center gap-2.5 group"
                     >
                         {userGroup.userImage ? (
@@ -623,7 +623,7 @@ export default function StoryViewerModal({
                                                     className="flex items-center justify-between pt-3 first:pt-0 gap-3"
                                                 >
                                                     <Link
-                                                        href={`/user/${viewer.userSlug || viewer.userId}`}
+                                                        href={`/${viewer.userSlug || viewer.userId}`}
                                                         onClick={onClose}
                                                         className="flex items-center gap-3 min-w-0 group flex-1"
                                                     >
@@ -662,7 +662,7 @@ export default function StoryViewerModal({
                                                     </Link>
 
                                                     <Link
-                                                        href={`/user/${viewer.userSlug || viewer.userId}`}
+                                                        href={`/${viewer.userSlug || viewer.userId}`}
                                                         onClick={onClose}
                                                         className="px-3 py-1.5 bg-gray-100 hover:bg-indigo-50 hover:text-indigo-600 text-gray-700 text-xs font-bold rounded-xl transition shrink-0"
                                                     >
@@ -683,7 +683,7 @@ export default function StoryViewerModal({
                                             className="flex items-center justify-between pt-3 first:pt-0 gap-3"
                                         >
                                             <Link
-                                                href={`/user/${reactor.userSlug || reactor.userId}`}
+                                                href={`/${reactor.userSlug || reactor.userId}`}
                                                 onClick={onClose}
                                                 className="flex items-center gap-3 min-w-0 group flex-1"
                                             >
@@ -715,7 +715,7 @@ export default function StoryViewerModal({
                                             </Link>
 
                                             <Link
-                                                href={`/user/${reactor.userSlug || reactor.userId}`}
+                                                href={`/${reactor.userSlug || reactor.userId}`}
                                                 onClick={onClose}
                                                 className="px-3 py-1.5 bg-gray-100 hover:bg-indigo-50 hover:text-indigo-600 text-gray-700 text-xs font-bold rounded-xl transition shrink-0"
                                             >

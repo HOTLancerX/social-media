@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
 import { Icon } from '@iconify/react';
+import FacebookEmoji from './FacebookEmoji';
 import AuthForm from '@/components/Auth';
 import type { MenuItem } from '@/models/Menu';
 import MobileDrawer from '@/components/page/header/MobileDrawer';
@@ -78,7 +79,17 @@ export default function SocialHeader({
     };
 
     useEffect(() => {
+        if (!isLoggedIn || !user?._id) return;
         fetchNotificationsData();
+
+        const interval = setInterval(fetchNotificationsData, 20000); // 20s live sync
+        const onFocus = () => fetchNotificationsData();
+        window.addEventListener('focus', onFocus);
+
+        return () => {
+            clearInterval(interval);
+            window.removeEventListener('focus', onFocus);
+        };
     }, [isLoggedIn, user?._id]);
 
     // Close popups on click outside
@@ -100,7 +111,7 @@ export default function SocialHeader({
     }, []);
 
     const userSlug = user?.slug || 'user';
-    const profileUrl = `/user/${userSlug}`;
+    const profileUrl = `/${userSlug}`;
 
     const handleAcceptFriend = async (friendshipId: string) => {
         try {
@@ -146,7 +157,7 @@ export default function SocialHeader({
         setNotificationsOpen(false);
 
         if (notif.type === 'friend_request' || notif.type === 'friend_accept') {
-            router.push(`/user/${notif.senderSlug}`);
+            router.push(`/${notif.senderSlug}`);
         } else if (notif.postSlug) {
             router.push(`/post/${notif.postSlug}`);
         } else if (notif.targetId) {
@@ -186,26 +197,23 @@ export default function SocialHeader({
     const totalBadgeCount = unreadCount + pendingRequests.length;
 
     const renderNotifIcon = (notif: any) => {
-        if (notif.type === 'reaction') {
-            if (notif.reactionType === 'love') return <Icon icon="solar:heart-bold" className="text-rose-500" width={16} />;
-            if (notif.reactionType === 'care') return <Icon icon="solar:shield-star-bold" className="text-amber-500" width={16} />;
-            if (notif.reactionType === 'haha') return <Icon icon="solar:emoji-funny-circle-bold" className="text-yellow-500" width={16} />;
-            return <Icon icon="solar:like-bold" className="text-blue-500" width={16} />;
+        if (notif.type === 'reaction' || notif.type === 'like' || notif.type === 'story_reaction') {
+            return <FacebookEmoji type={notif.reactionType || 'like'} size="xxs" />;
         }
-        if (notif.type === 'comment' || notif.type === 'reply') {
-            return <Icon icon="solar:chat-round-dots-bold" className="text-emerald-500" width={16} />;
+        if (notif.type === 'comment' || notif.type === 'reply' || notif.type === 'story_reply') {
+            return <Icon icon="solar:chat-round-dots-bold" className="text-emerald-500" width={15} />;
         }
         if (notif.type === 'share') {
-            return <Icon icon="solar:share-bold" className="text-indigo-500" width={16} />;
+            return <Icon icon="solar:share-bold" className="text-indigo-500" width={15} />;
         }
         if (notif.type === 'friend_request' || notif.type === 'friend_accept') {
-            return <Icon icon="solar:user-plus-bold" className="text-purple-500" width={16} />;
+            return <Icon icon="solar:user-plus-bold" className="text-purple-500" width={15} />;
         }
-        return <Icon icon="solar:bell-bold" className="text-indigo-500" width={16} />;
+        return <Icon icon="solar:bell-bold" className="text-indigo-500" width={15} />;
     };
 
     return (
-        <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-200/90 shadow-xs select-none">
+        <header className="sticky top-0 z-50 bg-white/95 border-b border-gray-200/90 shadow-xs select-none">
             <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2 sm:gap-4">
                 {/* ── 1. LEFT: Logo Branding & Search ── */}
                 <div className="flex items-center gap-3 shrink-0">

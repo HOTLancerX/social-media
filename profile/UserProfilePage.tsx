@@ -16,39 +16,17 @@ import { Icon } from '@iconify/react';
 import type { ISocialPostData } from '../models/SocialMedia';
 
 interface UserProfilePageProps {
-    userData: {
-        user: {
-            _id: string;
-            name: string;
-            slug: string;
-            email?: string;
-            image?: string;
-            type?: string;
-            city?: string;
-            state?: string;
-            createdAt?: string;
-        };
-        info: Record<string, string>;
-        stats: {
-            friendsCount: number;
-            postsCount: number;
-            photosCount: number;
-            videosCount: number;
-        };
-    };
+    userData: any;
     initialTab?: ProfileTab;
-    currentUser?: {
-        _id: string;
-        name: string;
-        image?: string;
-        type?: string;
-    } | null;
+    currentUser?: any;
+    onProfileUpdated?: () => void | Promise<void>;
 }
 
 export default function UserProfilePage({
     userData,
     initialTab = 'posts',
     currentUser,
+    onProfileUpdated,
 }: UserProfilePageProps) {
     const { data: session } = useSession();
     const effectiveCurrentUser = currentUser || (session?.user as any) || null;

@@ -12,6 +12,7 @@ import SinglePostPage from '../pages/single-post';
 import SocialHeader from '../ui/SocialHeader';
 import StoriesBar from '../ui/StoriesBar';
 import PostForm from '../ui/PostForm';
+import UserProfileDynamicPage from '../profile/UserProfileDynamicPage';
 
 // 1. Register Social Feeds Element
 registerBuilderElement('social-feeds', async (schema: any) => {
@@ -41,4 +42,15 @@ registerBuilderElement('social-post-form', async (schema: any) => {
 // 5. Register Single Post View Element
 registerBuilderElement('social-single-post', async (schema: any) => {
     return React.createElement(SinglePostPage, {});
+}, 'social-media');
+
+// 6. Register User Profile Element
+registerBuilderElement('social-profile', async (schema: any) => {
+    const s = { ...schema?.schema?.style, ...schema?.style };
+    return React.createElement(UserProfileDynamicPage, { settings: s });
+}, 'social-media');
+
+registerBuilderElement('user-profile', async (schema: any) => {
+    const s = { ...schema?.schema?.style, ...schema?.style };
+    return React.createElement(UserProfileDynamicPage, { settings: s });
 }, 'social-media');
