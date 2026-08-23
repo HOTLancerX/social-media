@@ -9,6 +9,7 @@ import PostCard from '../ui/PostCard';
 import StoriesBar from '../ui/StoriesBar';
 import ReelsFeedBar from '../ui/ReelsFeedBar';
 import VideoViewerModal from '../ui/VideoViewerModal';
+import HexAvatar from '../ui/HexAvatar';
 import type { ISocialPostData } from '../models/SocialMedia';
 
 type FeedTab = 'all' | 'image' | 'video' | 'poll' | 'popular' | 'my-posts' | 'saves';
@@ -177,18 +178,16 @@ export default function SocialFeedsPage() {
                     <aside className="hidden lg:block lg:col-span-3 space-y-4 sticky top-22">
                         {/* Profile Summary Card */}
                         <div className="bg-white rounded-2xl p-4 shadow-xs border border-gray-200/80 text-center">
-                            <div className="relative inline-block mx-auto mb-2">
-                                {currentUser?.image ? (
-                                    <img
-                                        src={currentUser.image}
-                                        alt="Avatar"
-                                        className="w-16 h-16 rounded-full object-cover ring-2 ring-blue-500/30 mx-auto"
-                                    />
-                                ) : (
-                                    <div className="w-16 h-16 rounded-full bg-linear-to-tr from-blue-600 to-indigo-600 text-white font-black text-xl flex items-center justify-center mx-auto shadow-md">
-                                        {currentUser?.name?.charAt(0)?.toUpperCase() || 'U'}
-                                    </div>
-                                )}
+                            <div className="relative inline-block mx-auto mb-3">
+                                <HexAvatar
+                                    image={currentUser?.image}
+                                    name={currentUser?.name}
+                                    size="lg"
+                                    isOnline={Boolean(currentUser)}
+                                    showLiveDot={Boolean(currentUser)}
+                                    showStatusOrLevel={false}
+                                    className="mx-auto"
+                                />
                             </div>
                             <h3 className="font-bold text-sm text-gray-900 truncate">
                                 {currentUser ? currentUser.name : 'Guest User'}
@@ -409,17 +408,14 @@ export default function SocialFeedsPage() {
                                                     href={`/${req.user.slug}`}
                                                     className="flex items-center gap-2.5 group"
                                                 >
-                                                    {req.user.image ? (
-                                                        <img
-                                                            src={req.user.image}
-                                                            alt={req.user.name}
-                                                            className="w-10 h-10 rounded-full object-cover shrink-0"
-                                                        />
-                                                    ) : (
-                                                        <div className="w-10 h-10 rounded-full bg-indigo-600 text-white font-bold text-xs flex items-center justify-center shrink-0">
-                                                            {req.user.name?.charAt(0)?.toUpperCase()}
-                                                        </div>
-                                                    )}
+                                                    <HexAvatar
+                                                        image={req.user.image}
+                                                        name={req.user.name}
+                                                        size="sm"
+                                                        isOnline={true}
+                                                        showLiveDot={false}
+                                                        showStatusOrLevel={false}
+                                                    />
                                                     <div className="min-w-0 flex-1">
                                                         <p className="text-xs font-bold text-gray-900 group-hover:text-indigo-600 truncate">
                                                             {req.user.name}
@@ -488,20 +484,14 @@ export default function SocialFeedsPage() {
                                                 href={`/${friend.slug}`}
                                                 className="flex items-center gap-2.5 p-2 rounded-xl hover:bg-gray-50 transition group"
                                             >
-                                                <div className="relative shrink-0">
-                                                    {friend.image ? (
-                                                        <img
-                                                            src={friend.image}
-                                                            alt={friend.name}
-                                                            className="w-9 h-9 rounded-full object-cover"
-                                                        />
-                                                    ) : (
-                                                        <div className="w-9 h-9 rounded-full bg-linear-to-tr from-indigo-600 to-purple-600 text-white font-bold text-xs flex items-center justify-center">
-                                                            {friend.name?.charAt(0)?.toUpperCase()}
-                                                        </div>
-                                                    )}
-                                                    <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-white rounded-full" />
-                                                </div>
+                                                <HexAvatar
+                                                    image={friend.image}
+                                                    name={friend.name}
+                                                    size="sm"
+                                                    isOnline={true}
+                                                    showLiveDot={true}
+                                                    showStatusOrLevel={false}
+                                                />
 
                                                 <div className="min-w-0 flex-1">
                                                     <p className="text-xs font-bold text-gray-800 group-hover:text-indigo-600 truncate transition">

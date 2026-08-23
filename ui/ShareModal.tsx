@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Icon } from '@iconify/react';
 import QuotePostCard from './QuotePostCard';
+import HexAvatar from './HexAvatar';
 import type { ISocialPostData, ISharedPostSnapshot } from '../models/SocialMedia';
 
 interface ShareModalProps {
@@ -299,17 +300,14 @@ export default function ShareModal({
                             {currentUser?._id ? (
                                 <>
                                     <div className="flex items-center gap-2.5">
-                                        {currentUser?.image ? (
-                                            <img
-                                                src={currentUser.image}
-                                                alt="Avatar"
-                                                className="w-8 h-8 rounded-full object-cover border border-gray-200"
-                                            />
-                                        ) : (
-                                            <div className="w-8 h-8 rounded-full bg-blue-600 text-white font-bold text-xs flex items-center justify-center">
-                                                {currentUser?.name?.charAt(0)?.toUpperCase() || 'U'}
-                                            </div>
-                                        )}
+                                        <HexAvatar
+                                            image={currentUser?.image}
+                                            name={currentUser?.name}
+                                            size="sm"
+                                            isOnline={true}
+                                            showLiveDot={false}
+                                            showStatusOrLevel={false}
+                                        />
                                         <span className="text-xs font-bold text-gray-800">
                                             {currentUser?.name || 'My Feed'}
                                         </span>

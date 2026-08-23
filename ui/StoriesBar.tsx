@@ -6,6 +6,7 @@ import { Icon } from '@iconify/react';
 import StoryViewerModal from './StoryViewerModal';
 import { GalleryModal } from '@/components/Gallery';
 import { BG_PRESETS } from './Text-BG';
+import HexAvatar from './HexAvatar';
 
 interface StoriesBarProps {
     currentUser?: {
@@ -264,27 +265,16 @@ export default function StoriesBar({ currentUser }: StoriesBarProps) {
 
                                         <div className="absolute inset-0 bg-linear-to-t from-black/75 via-transparent to-black/30" />
 
-                                        {/* User Avatar with Animated Gradient Story Ring */}
-                                        <div className="absolute top-2.5 left-2.5 z-10">
-                                            <div
-                                                className={`p-0.5 rounded-full shadow-md ${
-                                                    isNewUnviewed
-                                                        ? 'bg-linear-to-tr from-rose-500 via-amber-400 to-indigo-600 animate-pulse ring-2 ring-rose-400/50'
-                                                        : 'bg-gray-400/80'
-                                                }`}
-                                            >
-                                                {group.userImage ? (
-                                                    <img
-                                                        src={group.userImage}
-                                                        alt={group.userName}
-                                                        className="w-8 h-8 rounded-full object-cover border-2 border-white"
-                                                    />
-                                                ) : (
-                                                    <div className="w-8 h-8 rounded-full bg-indigo-600 text-white font-bold text-xs flex items-center justify-center border-2 border-white">
-                                                        {group.userName?.charAt(0)?.toUpperCase()}
-                                                    </div>
-                                                )}
-                                            </div>
+                                        {/* User Avatar Hexagon */}
+                                        <div className="absolute top-2 left-2 z-10">
+                                            <HexAvatar
+                                                image={group.userImage}
+                                                name={group.userName}
+                                                size="sm"
+                                                isOnline={isNewUnviewed}
+                                                showLiveDot={false}
+                                                showStatusOrLevel={false}
+                                            />
                                         </div>
 
                                         {/* Animated "NEW" Live Indicator Badge for Latest Stories */}

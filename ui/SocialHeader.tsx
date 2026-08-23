@@ -7,6 +7,9 @@ import { useSession, signOut } from 'next-auth/react';
 import { Icon } from '@iconify/react';
 import FacebookEmoji from './FacebookEmoji';
 import AuthForm from '@/components/Auth';
+import AuthAc from '@/components/AuthAc';
+import HexAvatar from './HexAvatar';
+import SocialChatSidebar from './SocialChatSidebar';
 import type { MenuItem } from '@/models/Menu';
 import MobileDrawer from '@/components/page/header/MobileDrawer';
 
@@ -48,6 +51,9 @@ export default function SocialHeader({
     const [userDropdownOpen, setUserDropdownOpen] = useState(false);
     const [createDropdownOpen, setCreateDropdownOpen] = useState(false);
     const [notificationsOpen, setNotificationsOpen] = useState(false);
+    const [sidebarExpanded, setSidebarExpanded] = useState(false);
+    const [userCoverPhoto, setUserCoverPhoto] = useState<string | null>(null);
+    const [hoveredTooltip, setHoveredTooltip] = useState<{ label: string; top: number } | null>(null);
     const [notifTab, setNotifTab] = useState<'all' | 'requests'>('all');
     const [authModal, setAuthModal] = useState<'login' | 'signup' | null>(null);
 
@@ -81,6 +87,16 @@ export default function SocialHeader({
     useEffect(() => {
         if (!isLoggedIn || !user?._id) return;
         fetchNotificationsData();
+
+        // Fetch user's cover photo dynamically
+        fetch(`/api/social-media/profile?userId=${user._id}`)
+            .then((r) => r.json())
+            .then((res) => {
+                if (res?.info?.cover_photo) {
+                    setUserCoverPhoto(res.info.cover_photo);
+                }
+            })
+            .catch(() => {});
 
         const interval = setInterval(fetchNotificationsData, 20000); // 20s live sync
         const onFocus = () => fetchNotificationsData();
@@ -211,6 +227,19 @@ export default function SocialHeader({
         }
         return <Icon icon="solar:bell-bold" className="text-indigo-500" width={15} />;
     };
+
+    const sidebarMenuItems = [
+        { label: 'Newsfeed', href: '/feeds', icon: 'solar:tv-linear', active: pathname === '/feeds' },
+        { label: 'Overview', href: user?.slug ? `/${user.slug}` : '/feeds', icon: 'solar:graph-bold', active: pathname === `/${user?.slug}` },
+        { label: 'Groups', href: '/feeds/groups', icon: 'solar:users-group-two-rounded-linear', active: pathname.includes('/groups') },
+        { label: 'Members', href: user?.slug ? `/${user.slug}/friends` : '/feeds', icon: 'solar:user-linear', active: pathname.includes('/friends') },
+        { label: 'Badges', href: '/badges', icon: 'solar:medal-ribbon-linear', active: pathname === '/badges' },
+        { label: 'Quests', href: '/quests', icon: 'solar:star-linear', active: pathname === '/quests' },
+        { label: 'Streams', href: '/feeds?type=video', icon: 'solar:play-circle-linear', active: pathname.includes('type=video') },
+        { label: 'Events', href: '/events', icon: 'solar:calendar-linear', active: pathname === '/events' },
+        { label: 'Forums', href: '/forums', icon: 'solar:chat-round-line-linear', active: pathname === '/forums' },
+        { label: 'Marketplace', href: '/shop', icon: 'solar:bag-3-linear', active: pathname === '/shop' || pathname.startsWith('/product') },
+    ];
 
     return (
         <header className="sticky top-0 z-50 bg-white/95 border-b border-gray-200/90 shadow-xs select-none">
@@ -496,17 +525,14 @@ export default function SocialHeader({
                                     onClick={() => setUserDropdownOpen((v) => !v)}
                                     className="flex items-center gap-2 p-0.5 rounded-full hover:bg-gray-100 transition cursor-pointer group"
                                 >
-                                    {user.image ? (
-                                        <img
-                                            src={user.image}
-                                            alt={user.name}
-                                            className="w-10 h-10 rounded-full object-cover ring-2 ring-indigo-500/30 group-hover:ring-indigo-500 transition shadow-xs"
-                                        />
-                                    ) : (
-                                        <div className="w-10 h-10 rounded-full bg-linear-to-tr from-indigo-600 to-purple-600 text-white font-bold text-sm flex items-center justify-center ring-2 ring-indigo-500/30 shadow-xs">
-                                            {user.name?.charAt(0)?.toUpperCase() || 'U'}
-                                        </div>
-                                    )}
+                                    <HexAvatar
+                                        image={user.image}
+                                        name={user.name}
+                                        size="sm"
+                                        isOnline={true}
+                                        showLiveDot={false}
+                                        showStatusOrLevel={false}
+                                    />
                                 </button>
 
                                 {userDropdownOpen && (
@@ -517,17 +543,14 @@ export default function SocialHeader({
                                             onClick={() => setUserDropdownOpen(false)}
                                             className="p-4 bg-linear-to-r from-indigo-50/80 to-purple-50/80 flex items-center gap-3.5 hover:from-indigo-100 hover:to-purple-100 transition border-b border-gray-100"
                                         >
-                                            {user.image ? (
-                                                <img
-                                                    src={user.image}
-                                                    alt={user.name}
-                                                    className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm shrink-0"
-                                                />
-                                            ) : (
-                                                <div className="w-12 h-12 rounded-full bg-indigo-600 text-white font-extrabold text-lg flex items-center justify-center border-2 border-white shadow-sm shrink-0">
-                                                    {user.name?.charAt(0)?.toUpperCase()}
-                                                </div>
-                                            )}
+                                            <HexAvatar
+                                                image={user.image}
+                                                name={user.name}
+                                                size="md"
+                                                isOnline={true}
+                                                showLiveDot={true}
+                                                showStatusOrLevel={false}
+                                            />
                                             <div className="min-w-0">
                                                 <p className="text-sm font-black text-gray-900 truncate">
                                                     {user.name}
@@ -677,6 +700,223 @@ export default function SocialHeader({
                     </div>
                 </div>
             )}
+
+            {/* Permanent Desktop Expandable Fixed Sidebar (Matching Screenshots 1 & 2) */}
+            <aside
+                className={`fixed left-0 top-16 bottom-0 z-40 bg-white border-r border-slate-200/90 hidden lg:flex flex-col transition-all duration-300 ease-in-out select-none shadow-[2px_0_12px_rgba(0,0,0,0.02)] ${
+                    sidebarExpanded ? 'w-72 sm:w-80' : 'w-20'
+                }`}
+            >
+                {!sidebarExpanded ? (
+                    /* ── 1. COLLAPSED VIEW (Screenshot 1) ── */
+                    <div className="flex flex-col h-full overflow-hidden w-full items-center">
+                        {/* Hexagonal Mini Avatar at Top */}
+                        <div className="pt-3.5 pb-2 px-2 flex justify-center shrink-0">
+                            <Link
+                                href={user?.slug ? `/${user.slug}` : '/feeds'}
+                                title={user?.name || 'Profile'}
+                                className="block transition-transform hover:scale-105 active:scale-95"
+                            >
+                                <HexAvatar
+                                    image={user?.image}
+                                    name={user?.name}
+                                    size="md"
+                                    isOnline={isLoggedIn}
+                                    level={24}
+                                />
+                            </Link>
+                        </div>
+
+                        {/* Vertical Icon List with Floating Tooltips (No Scrollbar) */}
+                        <div className="w-full flex-1 overflow-y-auto overflow-x-hidden scrollbar-none [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden flex flex-col items-center space-y-1 py-1 px-2">
+                            {sidebarMenuItems.map((item) => (
+                                <Link
+                                    key={item.label}
+                                    href={item.href}
+                                    onMouseEnter={(e) => {
+                                        const rect = e.currentTarget.getBoundingClientRect();
+                                        setHoveredTooltip({ label: item.label, top: rect.top + rect.height / 2 - 14 });
+                                    }}
+                                    onMouseLeave={() => setHoveredTooltip(null)}
+                                    className={`relative w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-200 shrink-0 ${
+                                        item.active
+                                            ? 'bg-indigo-50 text-indigo-600 shadow-2xs ring-1 ring-indigo-200/70'
+                                            : 'text-slate-400 hover:text-slate-900 hover:bg-slate-100/80'
+                                    }`}
+                                >
+                                    <Icon
+                                        icon={item.icon}
+                                        width={21}
+                                        className={`transition-transform duration-200 ${
+                                            item.active ? 'scale-105 text-indigo-600' : 'hover:scale-105'
+                                        }`}
+                                    />
+                                </Link>
+                            ))}
+                        </div>
+
+                        {/* Fixed Bottom Open/Expand Button */}
+                        <div className="py-2.5 px-2 w-full flex justify-center mt-auto shrink-0 bg-white border-t border-slate-100">
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setHoveredTooltip(null);
+                                    setSidebarExpanded(true);
+                                }}
+                                onMouseEnter={(e) => {
+                                    const rect = e.currentTarget.getBoundingClientRect();
+                                    setHoveredTooltip({ label: 'Expand Sidebar', top: rect.top + rect.height / 2 - 14 });
+                                }}
+                                onMouseLeave={() => setHoveredTooltip(null)}
+                                className="w-11 h-11 rounded-xl bg-slate-100/90 hover:bg-indigo-50 text-slate-500 hover:text-indigo-600 flex items-center justify-center transition-all duration-200 cursor-pointer shadow-2xs"
+                                title="Expand Sidebar"
+                                aria-label="Expand Sidebar"
+                            >
+                                <Icon
+                                    icon="solar:alt-arrow-right-bold"
+                                    width={18}
+                                    className="transition-transform"
+                                />
+                            </button>
+                        </div>
+                    </div>
+                ) : (
+                    /* ── 2. EXPANDED VIEW (Screenshot 2) ── */
+                    <div className="flex flex-col h-full overflow-hidden animate-in fade-in duration-200">
+                        {/* Top Dynamic Cover Banner */}
+                        <div className="relative h-28 bg-slate-900 overflow-hidden shrink-0">
+                            {userCoverPhoto ? (
+                                <img
+                                    src={userCoverPhoto}
+                                    alt="Cover"
+                                    className="w-full h-full object-cover opacity-95"
+                                />
+                            ) : (
+                                <div className="w-full h-full bg-linear-to-r from-blue-600 via-indigo-600 to-purple-700 relative">
+                                    <img
+                                        src="https://images.unsplash.com/photo-1578632767115-351597cf2477?w=800&auto=format&fit=crop&q=80"
+                                        alt="Cover Illustration"
+                                        className="w-full h-full object-cover mix-blend-overlay opacity-60"
+                                    />
+                                    <div className="absolute inset-0 opacity-25 bg-[radial-gradient(#fff_1px,transparent_1px)] bg-size-[12px_12px]" />
+                                </div>
+                            )}
+                            <div className="absolute inset-0 bg-linear-to-t from-slate-950/80 via-transparent to-black/30" />
+
+                            {/* Collapse Button in Cover Corner */}
+                            <button
+                                type="button"
+                                onClick={() => setSidebarExpanded(false)}
+                                className="absolute top-3 right-3 w-8 h-8 rounded-full bg-slate-900/80 hover:bg-slate-900 text-white flex items-center justify-center transition-all duration-200 cursor-pointer backdrop-blur-md shadow-lg border border-white/20 active:scale-90 z-20"
+                                title="Collapse Sidebar"
+                            >
+                                <Icon icon="solar:alt-arrow-left-bold" width={18} />
+                            </button>
+                        </div>
+
+                        {/* Hexagonal Avatar Profile Header */}
+                        <div className="px-5 pt-0 pb-3 text-center border-b border-slate-100 shrink-0">
+                            <div className="flex justify-center -mt-10 mb-2">
+                                <HexAvatar
+                                    image={user?.image}
+                                    name={user?.name}
+                                    size="xl"
+                                    isOnline={isLoggedIn}
+                                    level={24}
+                                />
+                            </div>
+
+                            {isLoggedIn ? (
+                                <>
+                                    <h3 className="font-black text-slate-900 text-sm leading-snug truncate">
+                                        {user?.name || 'Community Member'}
+                                    </h3>
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">
+                                        {user?.slug ? `@${user.slug}` : user?.email || 'MEMBER'}
+                                    </p>
+                                </>
+                            ) : (
+                                <>
+                                    <h3 className="font-black text-slate-900 text-sm leading-snug">
+                                        Welcome, Guest
+                                    </h3>
+                                    <div className="flex items-center justify-center gap-2 mt-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => setAuthModal('login')}
+                                            className="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold transition"
+                                        >
+                                            Sign In
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setAuthModal('signup')}
+                                            className="px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition shadow-xs"
+                                        >
+                                            Join Now
+                                        </button>
+                                    </div>
+                                </>
+                            )}
+                        </div>
+
+                        {/* Menu Item List with Labels (Matching Screenshot 2) */}
+                        <div className="flex-1 overflow-y-auto py-2 px-3 space-y-1">
+                            {sidebarMenuItems.map((item) => (
+                                <Link
+                                    key={item.label}
+                                    href={item.href}
+                                    className={`flex items-center gap-3.5 px-3.5 py-2.5 rounded-2xl font-bold text-xs transition-all duration-200 group ${
+                                        item.active
+                                            ? 'bg-indigo-50 text-indigo-600 shadow-2xs'
+                                            : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                                    }`}
+                                >
+                                    <Icon
+                                        icon={item.icon}
+                                        width={20}
+                                        className={`transition-colors duration-200 ${
+                                            item.active
+                                                ? 'text-indigo-600'
+                                                : 'text-slate-400 group-hover:text-indigo-600'
+                                        }`}
+                                    />
+                                    <span className="flex-1 truncate">{item.label}</span>
+                                    {item.active && (
+                                        <span className="w-1.5 h-4 bg-indigo-600 rounded-full" />
+                                    )}
+                                </Link>
+                            ))}
+                        </div>
+
+                        {/* Fixed Bottom Collapse Action */}
+                        <div className="p-3 border-t border-slate-100 bg-slate-50/60 flex items-center justify-between gap-2 shrink-0">
+                            <button
+                                type="button"
+                                onClick={() => setSidebarExpanded(false)}
+                                className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-white hover:bg-indigo-50 text-slate-700 hover:text-indigo-600 rounded-xl text-xs font-bold border border-slate-200/80 transition shadow-2xs cursor-pointer"
+                            >
+                                <Icon icon="solar:alt-arrow-left-bold" width={16} />
+                                <span>Collapse Sidebar</span>
+                            </button>
+                        </div>
+                    </div>
+                )}
+            </aside>
+
+            {/* Global Floating Tooltip for Mini Sidebar (Never Clipped by Overflow) */}
+            {hoveredTooltip && !sidebarExpanded && (
+                <div
+                    className="fixed left-22 z-99999 px-3 py-1.5 bg-slate-900/95 text-white text-xs font-bold rounded-xl shadow-2xl pointer-events-none transition-all duration-150 backdrop-blur-xs flex items-center border border-slate-700/50"
+                    style={{ top: `${hoveredTooltip.top}px` }}
+                >
+                    <span>{hoveredTooltip.label}</span>
+                    <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-900/95" />
+                </div>
+            )}
+
+            {/* Right Chat Sidebar (Vikinger Style, Logged-in Only) */}
+            {isLoggedIn && <SocialChatSidebar currentUser={user} />}
         </header>
     );
 }

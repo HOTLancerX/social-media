@@ -15,6 +15,7 @@ import ReactionSummary from './ReactionSummary';
 import FacebookEmoji from './FacebookEmoji';
 import CommentSection from './CommentSection';
 import EditPostModal from './EditPostModal';
+import HexAvatar from './HexAvatar';
 import type { ISocialPostData, ILinkPreview } from '../models/SocialMedia';
 import type { ReactionType } from '../models/Like';
 
@@ -303,18 +304,15 @@ export default function PostCard({
                 <div className="p-4 sm:p-5 flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3 min-w-0">
                         {/* User Avatar */}
-                        <Link href={`/${currentPost.userSlug || currentPost.userName}`} className="shrink-0 group">
-                            {currentPost.userImage ? (
-                                <img
-                                    src={currentPost.userImage}
-                                    alt={currentPost.userName}
-                                    className="w-10 h-10 rounded-full object-cover border border-slate-100 shadow-xs group-hover:scale-105 transition-transform"
-                                />
-                            ) : (
-                                <div className="w-10 h-10 rounded-full bg-linear-to-tr from-indigo-600 to-purple-600 text-white font-bold text-sm flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform">
-                                    {currentPost.userName?.charAt(0)?.toUpperCase() || 'U'}
-                                </div>
-                            )}
+                        <Link href={`/${currentPost.userSlug || currentPost.userName}`} className="shrink-0 group block transition-transform hover:scale-105">
+                            <HexAvatar
+                                image={currentPost.userImage}
+                                name={currentPost.userName}
+                                size="sm"
+                                isOnline={true}
+                                showLiveDot={false}
+                                showStatusOrLevel={false}
+                            />
                         </Link>
 
                         <div className="min-w-0">

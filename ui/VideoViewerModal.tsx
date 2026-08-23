@@ -9,6 +9,7 @@ import FacebookEmoji from './FacebookEmoji';
 import ReactionPicker from './ReactionPicker';
 import CommentSection from './CommentSection';
 import ShareModal from './ShareModal';
+import HexAvatar from './HexAvatar';
 import type { ISocialPostData } from '../models/SocialMedia';
 
 interface VideoViewerModalProps {
@@ -369,17 +370,14 @@ export default function VideoViewerModal({
                                                 className="shrink-0 group flex items-center gap-2.5"
                                                 onClick={(e) => e.stopPropagation()}
                                             >
-                                                {post.userImage ? (
-                                                    <img
-                                                        src={post.userImage}
-                                                        alt={post.userName}
-                                                        className="w-11 h-11 rounded-full object-cover border-2 border-white/80 shadow-md group-hover:scale-105 transition"
-                                                    />
-                                                ) : (
-                                                    <div className="w-11 h-11 rounded-full bg-linear-to-tr from-indigo-600 to-purple-600 text-white font-bold text-base flex items-center justify-center shadow-md border-2 border-white/80">
-                                                        {post.userName?.charAt(0)?.toUpperCase()}
-                                                    </div>
-                                                )}
+                                                <HexAvatar
+                                                    image={post.userImage}
+                                                    name={post.userName}
+                                                    size="md"
+                                                    isOnline={true}
+                                                    showLiveDot={false}
+                                                    showStatusOrLevel={false}
+                                                />
                                                 <div>
                                                     <div className="flex items-center gap-1.5">
                                                         <span className="font-black text-white text-sm drop-shadow-md hover:underline">

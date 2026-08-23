@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Icon } from '@iconify/react';
 import ReactionPicker, { REACTION_CONFIGS } from './ReactionPicker';
 import ReactionSummary from './ReactionSummary';
+import HexAvatar from './HexAvatar';
 import type { ReactionType } from '../models/Like';
 
 interface CommentItem {
@@ -257,17 +258,14 @@ export default function CommentSection({
             {/* New Comment Input Box or Guest Login Banner */}
             {currentUser?._id ? (
                 <form onSubmit={handleCreateComment} className="flex items-start gap-2.5">
-                    {currentUser?.image ? (
-                        <img
-                            src={currentUser.image}
-                            alt="My Avatar"
-                            className="w-8 h-8 rounded-full object-cover shrink-0 mt-0.5 border border-gray-200"
-                        />
-                    ) : (
-                        <div className="w-8 h-8 rounded-full bg-linear-to-tr from-blue-500 to-indigo-600 text-white font-bold text-xs flex items-center justify-center shrink-0 mt-0.5 shadow-xs">
-                            {currentUser?.name?.charAt(0)?.toUpperCase() || 'U'}
-                        </div>
-                    )}
+                    <HexAvatar
+                        image={currentUser?.image}
+                        name={currentUser?.name}
+                        size="sm"
+                        isOnline={true}
+                        showLiveDot={false}
+                        showStatusOrLevel={false}
+                    />
 
                     <div className="flex-1 relative flex items-center">
                         <input
@@ -324,17 +322,14 @@ export default function CommentSection({
                             <div key={comment._id} className="space-y-2 group/comment">
                                 {/* Top-level Comment Card */}
                                 <div className="flex items-start gap-2.5">
-                                    {comment.userImage ? (
-                                        <img
-                                            src={comment.userImage}
-                                            alt={comment.userName}
-                                            className="w-8 h-8 rounded-full object-cover shrink-0 mt-0.5 border border-gray-100"
-                                        />
-                                    ) : (
-                                        <div className="w-8 h-8 rounded-full bg-linear-to-tr from-slate-600 to-gray-800 text-white font-bold text-xs flex items-center justify-center shrink-0 mt-0.5 shadow-xs">
-                                            {comment.userName?.charAt(0)?.toUpperCase() || 'U'}
-                                        </div>
-                                    )}
+                                    <HexAvatar
+                                        image={comment.userImage}
+                                        name={comment.userName}
+                                        size="sm"
+                                        isOnline={true}
+                                        showLiveDot={false}
+                                        showStatusOrLevel={false}
+                                    />
 
                                     <div className="flex-1 min-w-0">
                                         {/* Comment Bubble */}

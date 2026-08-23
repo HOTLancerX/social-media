@@ -4,6 +4,7 @@ import React from 'react';
 import { Icon } from '@iconify/react';
 import TextPost from './Text';
 import TextBgPost from './Text-BG';
+import HexAvatar from './HexAvatar';
 import type { ISharedPostSnapshot } from '../models/SocialMedia';
 
 interface QuotePostCardProps {
@@ -25,22 +26,20 @@ export default function QuotePostCard({ sharedPost, className = '' }: QuotePostC
 
     return (
         <div
-            className={`border border-gray-200/90 rounded-2xl overflow-hidden bg-gray-50/70 hover:bg-gray-50 transition shadow-xs ${className}`}
+            className={`border border-gray-200/90 rounded overflow-hidden bg-gray-50/70 hover:bg-gray-50 transition shadow-xs ${className}`}
         >
             {/* Original Author Row */}
-            <div className="p-3 bg-white/80 flex items-center justify-between gap-2 border-b border-gray-100">
+            <div className="p-2 bg-white/80 flex items-center justify-between gap-2 border-b border-gray-100">
                 <div className="flex items-center gap-2.5 min-w-0">
-                    {sharedPost.userImage ? (
-                        <img
-                            src={sharedPost.userImage}
-                            alt={sharedPost.userName}
-                            className="w-7 h-7 rounded-full object-cover border border-gray-200 shrink-0"
-                        />
-                    ) : (
-                        <div className="w-7 h-7 rounded-full bg-blue-600 text-white font-bold text-[11px] flex items-center justify-center shrink-0">
-                            {sharedPost.userName?.charAt(0)?.toUpperCase() || 'U'}
-                        </div>
-                    )}
+                    <HexAvatar
+                        image={sharedPost.userImage}
+                        name={sharedPost.userName}
+                        size="sm"
+                        isOnline={false}
+                        showLiveDot={false}
+                        showStatusOrLevel={false}
+                        className="w-7 h-7 shrink-0"
+                    />
 
                     <div className="min-w-0">
                         <span className="font-bold text-gray-900 text-xs truncate block">
@@ -58,7 +57,7 @@ export default function QuotePostCard({ sharedPost, className = '' }: QuotePostC
             </div>
 
             {/* Content Preview */}
-            <div className="p-3">
+            <div>
                 {sharedPost.type === 'text' && (
                     <TextPost content={sharedPost.content} maxChars={200} />
                 )}

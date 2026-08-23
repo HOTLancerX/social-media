@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Icon } from '@iconify/react';
+import HexAvatar from '../ui/HexAvatar';
 
 interface ProfileFollowersProps {
     userId: string;
@@ -121,17 +122,14 @@ export default function ProfileFollowers({
                             className="p-4 rounded-2xl border border-gray-100 bg-white hover:border-indigo-200 hover:shadow-md transition duration-200 flex items-center justify-between gap-3"
                         >
                             <Link href={`/${user.slug}`} className="flex items-center gap-3 min-w-0 flex-1 group">
-                                {user.image ? (
-                                    <img
-                                        src={user.image}
-                                        alt={user.name}
-                                        className="w-12 h-12 rounded-full object-cover shrink-0 ring-2 ring-transparent group-hover:ring-indigo-400 transition"
-                                    />
-                                ) : (
-                                    <div className="w-12 h-12 rounded-full bg-linear-to-tr from-indigo-600 to-purple-600 text-white font-bold flex items-center justify-center text-sm shrink-0">
-                                        {user.name?.charAt(0)?.toUpperCase()}
-                                    </div>
-                                )}
+                                <HexAvatar
+                                    image={user.image}
+                                    name={user.name}
+                                    size="md"
+                                    isOnline={user.status === 'online'}
+                                    showLiveDot={true}
+                                    showStatusOrLevel={false}
+                                />
 
                                 <div className="min-w-0">
                                     <h4 className="text-xs font-black text-gray-900 group-hover:text-indigo-600 transition truncate">

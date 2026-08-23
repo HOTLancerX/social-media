@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Icon } from '@iconify/react';
+import HexAvatar from '../ui/HexAvatar';
 
 interface ProfileFriendsProps {
     userId: string;
@@ -140,13 +141,14 @@ export default function ProfileFriends({ userId, isOwner = false }: ProfileFrien
                         {pending.map((item) => (
                             <div key={item.friendshipId} className="p-4 rounded-2xl border border-indigo-100 bg-indigo-50/30 flex items-center justify-between gap-3 shadow-xs">
                                 <Link href={`/${item.user.slug}`} className="flex items-center gap-3 min-w-0">
-                                    {item.user.image ? (
-                                        <img src={item.user.image} alt={item.user.name} className="w-12 h-12 rounded-full object-cover border border-white shadow-xs shrink-0" />
-                                    ) : (
-                                        <div className="w-12 h-12 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center shrink-0">
-                                            {item.user.name?.charAt(0)?.toUpperCase()}
-                                        </div>
-                                    )}
+                                    <HexAvatar
+                                        image={item.user.image}
+                                        name={item.user.name}
+                                        size="md"
+                                        isOnline={item.user.status === 'online'}
+                                        showLiveDot={true}
+                                        showStatusOrLevel={false}
+                                    />
                                     <div className="min-w-0">
                                         <p className="font-bold text-xs text-gray-900 truncate hover:text-indigo-600">{item.user.name}</p>
                                         <p className="text-[11px] text-gray-400 font-medium">@{item.user.slug}</p>
@@ -194,17 +196,14 @@ export default function ProfileFriends({ userId, isOwner = false }: ProfileFrien
                                     className="p-3.5 bg-gray-50/70 hover:bg-white rounded-2xl border border-gray-100 hover:border-indigo-100 hover:shadow-md transition duration-200 flex items-center justify-between gap-3 group"
                                 >
                                     <Link href={`/${f.slug}`} className="flex items-center gap-3 min-w-0">
-                                        {f.image ? (
-                                            <img
-                                                src={f.image}
-                                                alt={f.name}
-                                                className="w-12 h-12 rounded-full object-cover border border-white shadow-xs shrink-0 group-hover:scale-105 transition-transform"
-                                            />
-                                        ) : (
-                                            <div className="w-12 h-12 rounded-full bg-linear-to-tr from-indigo-600 to-purple-600 text-white font-bold text-sm flex items-center justify-center shrink-0 shadow-xs">
-                                                {f.name?.charAt(0)?.toUpperCase()}
-                                            </div>
-                                        )}
+                                        <HexAvatar
+                                            image={f.image}
+                                            name={f.name}
+                                            size="md"
+                                            isOnline={f.status === 'online'}
+                                            showLiveDot={true}
+                                            showStatusOrLevel={false}
+                                        />
                                         <div className="min-w-0">
                                             <p className="font-bold text-xs text-gray-900 truncate group-hover:text-indigo-600 transition">
                                                 {f.name}

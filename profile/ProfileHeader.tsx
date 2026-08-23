@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Icon } from '@iconify/react';
 import { GalleryModal } from '@/components/Gallery';
+import HexAvatar from '../ui/HexAvatar';
 
 export type ProfileTab = 'posts' | 'about' | 'friends' | 'followers' | 'photos' | 'videos' | 'settings';
 
@@ -170,26 +171,24 @@ export default function ProfileHeader({
                     {/* Left: Avatar + Names */}
                     <div className="flex flex-col sm:flex-row items-center sm:items-end gap-4 text-center sm:text-left">
                         <div className="relative group">
-                            {user.image ? (
-                                <img
-                                    src={user.image}
-                                    alt={user.name}
-                                    className="w-28 h-28 sm:w-36 sm:h-36 rounded-full object-cover border-4 border-white shadow-xl bg-white"
-                                />
-                            ) : (
-                                <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-full bg-linear-to-tr from-indigo-600 to-purple-600 text-white font-extrabold text-4xl sm:text-5xl flex items-center justify-center border-4 border-white shadow-xl">
-                                    {user.name.charAt(0).toUpperCase()}
-                                </div>
-                            )}
+                            <HexAvatar
+                                image={user.image}
+                                name={user.name}
+                                size="xl"
+                                progress={80}
+                                isOnline={user.status === 'online'}
+                                showLiveDot={user.status === 'online'}
+                                showStatusOrLevel={false}
+                            />
 
                             {isOwner && (
                                 <button
                                     type="button"
                                     onClick={() => setShowAvatarGallery(true)}
-                                    className="absolute bottom-1 right-1 p-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full shadow-lg border-2 border-white transition cursor-pointer"
+                                    className="absolute bottom-1 right-1 sm:bottom-2 sm:right-2 p-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full shadow-lg border-2 border-white transition cursor-pointer z-30 transform hover:scale-105"
                                     title="Change Profile Photo"
                                 >
-                                    <Icon icon="solar:camera-bold" width={16} />
+                                    <Icon icon="solar:camera-bold" width={18} />
                                 </button>
                             )}
                         </div>
@@ -293,6 +292,30 @@ export default function ProfileHeader({
                                         <span className="hidden group-hover:inline">Unfriend</span>
                                     </button>
                                 )}
+
+                                {/* Message / Messenger Button */}
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        window.dispatchEvent(
+                                            new CustomEvent('open_chat_sidebar', {
+                                                detail: {
+                                                    user: {
+                                                        _id: user._id,
+                                                        name: user.name,
+                                                        slug: user.slug || user._id,
+                                                        image: user.image,
+                                                        status: 'online',
+                                                    },
+                                                },
+                                            })
+                                        );
+                                    }}
+                                    className="px-4 py-2 bg-linear-to-r from-cyan-500 via-blue-600 to-indigo-600 hover:opacity-95 text-white rounded-xl text-xs font-bold shadow-md shadow-indigo-600/20 transition flex items-center gap-1.5 cursor-pointer active:scale-95"
+                                >
+                                    <Icon icon="solar:chat-round-dots-bold" width={16} />
+                                    <span>Message</span>
+                                </button>
                             </>
                         )}
                     </div>

@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom';
 import { Icon } from '@iconify/react';
 import Gallery from '@/components/Gallery';
 import { BG_PRESETS } from './Text-BG';
+import HexAvatar from './HexAvatar';
 import type { PostType, IBgStyle, IFeeling, ILinkPreview } from '../models/SocialMedia';
 
 const FEELINGS_LIST: IFeeling[] = [
@@ -328,17 +329,15 @@ export default function PostForm({
                 {/* 2. Composer Body */}
                 <div className="p-4 space-y-3">
                     <div className="flex items-start gap-3">
-                        {currentUser?.image ? (
-                            <img
-                                src={currentUser.image}
-                                alt="Avatar"
-                                className="w-10 h-10 rounded-full object-cover border border-gray-200 shrink-0 mt-1"
-                            />
-                        ) : (
-                            <div className="w-10 h-10 rounded-full bg-linear-to-tr from-blue-600 to-indigo-600 text-white font-bold text-sm flex items-center justify-center shrink-0 mt-1 shadow-xs">
-                                {currentUser?.name?.charAt(0)?.toUpperCase() || 'U'}
-                            </div>
-                        )}
+                        <HexAvatar
+                            image={currentUser?.image}
+                            name={currentUser?.name}
+                            size="sm"
+                            isOnline={true}
+                            showLiveDot={false}
+                            showStatusOrLevel={false}
+                            className="mt-1"
+                        />
 
                         <textarea
                             rows={3}
@@ -566,17 +565,14 @@ export default function PostForm({
                             {/* User Info + Audience Selector */}
                             <div className="p-4 flex items-center justify-between border-b border-gray-50">
                                 <div className="flex items-center gap-3">
-                                    {currentUser?.image ? (
-                                        <img
-                                            src={currentUser.image}
-                                            alt="Avatar"
-                                            className="w-10 h-10 rounded-full object-cover border border-gray-200"
-                                        />
-                                    ) : (
-                                        <div className="w-10 h-10 rounded-full bg-linear-to-tr from-blue-600 to-indigo-600 text-white font-bold text-sm flex items-center justify-center shadow-xs">
-                                            {currentUser?.name?.charAt(0)?.toUpperCase() || 'U'}
-                                        </div>
-                                    )}
+                                    <HexAvatar
+                                        image={currentUser?.image}
+                                        name={currentUser?.name}
+                                        size="sm"
+                                        isOnline={true}
+                                        showLiveDot={false}
+                                        showStatusOrLevel={false}
+                                    />
 
                                     <div>
                                         <h4 className="font-bold text-gray-900 text-sm flex items-center gap-1.5">
