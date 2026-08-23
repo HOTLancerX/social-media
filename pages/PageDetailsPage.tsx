@@ -80,7 +80,7 @@ export default function PageDetailsPage({ pageSlug, currentUser }: PageDetailsPr
 
     return (
         <div className="min-h-screen bg-[#F0F2F5] pb-16 pt-4">
-            <div className="max-w-5xl mx-auto px-4 space-y-6">
+            <div className="container space-y-6">
                 {/* 1. Page Header */}
                 <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
                     <div className="relative w-full h-56 md:h-72 bg-gray-900 overflow-hidden">

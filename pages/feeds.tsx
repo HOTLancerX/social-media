@@ -172,7 +172,7 @@ export default function SocialFeedsPage() {
     return (
         <div className="min-h-screen bg-[#F0F2F5] text-gray-900 pb-16">
             {/* 3-Column Layout Container */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+            <div className="container py-6">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                     {/* LEFT SIDEBAR (Col 1-3) */}
                     <aside className="hidden lg:block lg:col-span-3 space-y-4 sticky top-22">

@@ -56,6 +56,7 @@ export default function SocialHeader({
     const [hoveredTooltip, setHoveredTooltip] = useState<{ label: string; top: number } | null>(null);
     const [notifTab, setNotifTab] = useState<'all' | 'requests'>('all');
     const [authModal, setAuthModal] = useState<'login' | 'signup' | null>(null);
+    const [mobileMenuDrawer, setMobileMenuDrawer] = useState(false);
 
     const [pendingRequests, setPendingRequests] = useState<any[]>([]);
     const [notifications, setNotifications] = useState<any[]>([]);
@@ -196,7 +197,6 @@ export default function SocialHeader({
     // Navigation links for Logged In vs Logged Out users
     const loggedInTabs = [
         { id: 'home', label: 'Website Home', href: '/', icon: 'solar:home-2-bold', active: pathname === '/' },
-        { id: 'feeds', label: 'Social Feeds', href: '/feeds', icon: 'solar:feed-bold', active: pathname === '/feeds' || pathname.startsWith('/post') },
         { id: 'friends', label: 'Friends', href: `${profileUrl}/friends`, icon: 'solar:users-group-rounded-bold', active: pathname.endsWith('/friends') },
         { id: 'saves', label: 'Saved', href: '/saves', icon: 'solar:bookmark-bold', active: pathname === '/saves' },
         { id: 'photos', label: 'Photos', href: `${profileUrl}/photos`, icon: 'solar:gallery-wide-bold', active: pathname.endsWith('/photos') },
@@ -229,7 +229,7 @@ export default function SocialHeader({
     };
 
     const sidebarMenuItems = [
-        { label: 'Newsfeed', href: '/feeds', icon: 'solar:tv-linear', active: pathname === '/feeds' },
+        { label: 'Newsfeed', href: '/', icon: 'solar:tv-linear', active: pathname === '/' },
         { label: 'Overview', href: user?.slug ? `/${user.slug}` : '/feeds', icon: 'solar:graph-bold', active: pathname === `/${user?.slug}` },
         { label: 'Groups', href: '/feeds/groups', icon: 'solar:users-group-two-rounded-linear', active: pathname.includes('/groups') },
         { label: 'Members', href: user?.slug ? `/${user.slug}/friends` : '/feeds', icon: 'solar:user-linear', active: pathname.includes('/friends') },
@@ -242,8 +242,8 @@ export default function SocialHeader({
     ];
 
     return (
-        <header className="sticky top-0 z-50 bg-white/95 border-b border-gray-200/90 shadow-xs select-none">
-            <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2 sm:gap-4">
+        <header className="nxlogin sticky top-0 z-50 bg-white/95 border-b border-gray-200/90 shadow-xs select-none">
+            <div className="container h-16 flex items-center justify-between gap-2 sm:gap-4">
                 {/* ── 1. LEFT: Logo Branding & Search ── */}
                 <div className="flex items-center gap-3 shrink-0">
                     <Link href="/feeds" className="flex items-center gap-2.5 group">
@@ -685,7 +685,7 @@ export default function SocialHeader({
                     onClick={() => setAuthModal(null)}
                 >
                     <div
-                        className="w-full max-w-md bg-white rounded-3xl shadow-2xl p-6 relative"
+                        className="w-full max-w-md relative"
                         onClick={(e) => e.stopPropagation()}
                     >
                         <button
@@ -917,6 +917,96 @@ export default function SocialHeader({
 
             {/* Right Chat Sidebar (Vikinger Style, Logged-in Only) */}
             {isLoggedIn && <SocialChatSidebar currentUser={user} />}
+
+            {/* ── 4. Mobile Fixed Bottom Footer Navigation Bar (Visible ONLY on Mobile: lg:hidden) ── */}
+            <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-xl border-t border-slate-200/90 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] lg:hidden select-none">
+                <div className="flex items-center justify-around h-14 px-1 sm:px-2">
+                    {/* Primary top 4 items from sidebarMenuItems */}
+                    {sidebarMenuItems.slice(0, 4).map((item) => (
+                        <Link
+                            key={item.label}
+                            href={item.href}
+                            className={`flex flex-col items-center justify-center flex-1 py-1 gap-0.5 transition-all ${
+                                item.active
+                                    ? 'text-indigo-600 font-bold'
+                                    : 'text-slate-500 hover:text-slate-900 font-medium'
+                            }`}
+                        >
+                            <div className={`p-1 rounded-xl transition-all ${item.active ? 'bg-indigo-50 shadow-2xs' : ''}`}>
+                                <Icon icon={item.icon} width={20} className={item.active ? 'scale-110' : ''} />
+                            </div>
+                            <span className="text-[10px] leading-none truncate max-w-[62px]">{item.label}</span>
+                        </Link>
+                    ))}
+
+                    {/* 5th Action: "More" Menu Toggle Button that opens the drawer */}
+                    <button
+                        type="button"
+                        onClick={() => setMobileMenuDrawer(!mobileMenuDrawer)}
+                        className={`flex flex-col items-center justify-center flex-1 py-1 gap-0.5 transition-all cursor-pointer ${
+                            mobileMenuDrawer || sidebarMenuItems.slice(4).some((i) => i.active)
+                                ? 'text-indigo-600 font-bold'
+                                : 'text-slate-500 hover:text-slate-900 font-medium'
+                        }`}
+                    >
+                        <div className={`p-1 rounded-xl transition-all ${mobileMenuDrawer || sidebarMenuItems.slice(4).some((i) => i.active) ? 'bg-indigo-50 shadow-2xs' : ''}`}>
+                            <Icon
+                                icon={mobileMenuDrawer ? 'solar:close-circle-bold' : 'solar:widget-add-linear'}
+                                width={20}
+                            />
+                        </div>
+                        <span className="text-[10px] leading-none">More</span>
+                    </button>
+                </div>
+            </nav>
+
+            {/* ── 5. Mobile Menu Full Bottom Sheet Drawer ── */}
+            {mobileMenuDrawer && (
+                <div
+                    className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex flex-col justify-end lg:hidden animate-in fade-in duration-200"
+                    onClick={() => setMobileMenuDrawer(false)}
+                >
+                    <div
+                        className="bg-white rounded-t-3xl p-5 max-h-[82vh] overflow-y-auto space-y-4 shadow-2xl border-t border-slate-200 animate-in slide-in-from-bottom duration-250 pb-10"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-1" />
+                        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                            <h3 className="font-bold text-sm text-slate-900 flex items-center gap-2">
+                                <Icon icon="solar:widget-bold" className="text-indigo-600" width={18} />
+                                Menu & Navigation
+                            </h3>
+                            <button
+                                type="button"
+                                onClick={() => setMobileMenuDrawer(false)}
+                                className="p-1 rounded-full text-slate-400 hover:text-slate-700 bg-slate-100 cursor-pointer"
+                            >
+                                <Icon icon="solar:close-circle-bold" width={18} />
+                            </button>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2.5">
+                            {sidebarMenuItems.map((item) => (
+                                <Link
+                                    key={item.label}
+                                    href={item.href}
+                                    onClick={() => setMobileMenuDrawer(false)}
+                                    className={`flex items-center gap-3 p-3 rounded-2xl text-xs font-bold transition-all ${
+                                        item.active
+                                            ? 'bg-indigo-50 text-indigo-600 border border-indigo-200/80 shadow-2xs'
+                                            : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200/60'
+                                    }`}
+                                >
+                                    <div className={`p-1.5 rounded-xl ${item.active ? 'bg-indigo-600 text-white' : 'bg-white text-slate-500 shadow-2xs'}`}>
+                                        <Icon icon={item.icon} width={18} />
+                                    </div>
+                                    <span className="truncate">{item.label}</span>
+                                </Link>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
         </header>
     );
 }

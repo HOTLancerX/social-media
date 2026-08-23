@@ -21,6 +21,7 @@ import SocialFeedsPage from "./pages/feeds";
 import SinglePostPage from "./pages/single-post";
 import SocialHeader from "./ui/SocialHeader";
 import UserProfileDynamicPage from "./profile/UserProfileDynamicPage";
+import SocialLoginPage from "./pages/login";
 
 export const PLUGINS: PluginMeta = {
     nx: "social-media",
@@ -34,7 +35,7 @@ export const PLUGINS: PluginMeta = {
 };
 
 export function register() {
-    // ─── Root Pages (Accessible at /feeds, /user/:slug, /profile/:slug, /post/:id) & Layouts ─
+    // ─── Root Pages (Accessible at /feeds, /login, /user/:slug, /profile/:slug, /post/:id) & Layouts ─
     addHook(
         "root.pages",
         [
@@ -51,12 +52,32 @@ export function register() {
             {
                 key: "feeds",
                 label: "Social Feeds",
-                type: "feeds",
-                slug: "single",
+                type: "builder",
+                slug: "layout",
                 style: "left",
                 position: 10,
                 active: true,
                 component: SocialFeedsPage,
+            },
+            {
+                key: "login",
+                label: "Social Login",
+                type: "builder",
+                slug: "layout",
+                style: "left",
+                position: 5,
+                active: true,
+                component: SocialLoginPage,
+            },
+            {
+                key: "social-login",
+                label: "Social Login Single",
+                type: "single",
+                slug: "login",
+                style: "left",
+                position: 5,
+                active: true,
+                component: SocialLoginPage,
             },
             {
                 key: "social-feed",

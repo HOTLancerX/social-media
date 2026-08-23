@@ -85,7 +85,7 @@ export default function SinglePostPage({ postId: propPostId }: SinglePostPagePro
             </div>
 
             {/* Post Container */}
-            <div className="max-w-2xl mx-auto px-4 pt-6">
+            <div className="container pt-6">
                 {loading ? (
                     <div className="bg-white rounded-2xl p-6 shadow-xs border border-gray-200/80 space-y-4 animate-pulse">
                         <div className="flex items-center gap-3">

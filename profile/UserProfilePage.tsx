@@ -96,8 +96,8 @@ export default function UserProfilePage({
     };
 
     return (
-        <div className="min-h-screen bg-[#F0F2F5] pb-16 pt-4">
-            <div className="max-w-6xl mx-auto px-3 sm:px-4 md:px-6">
+        <div className="min-h-screen pb-16 pt-4">
+            <div className="container">
                 {/* 1. Header Suite */}
                 <ProfileHeader
                     user={user}
