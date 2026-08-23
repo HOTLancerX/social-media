@@ -43,7 +43,7 @@ export default function VideoPost({
     return (
         <div
             onClick={handleClick}
-            className={`relative w-full rounded-2xl overflow-hidden shadow-md bg-black border border-gray-200/80 aspect-video cursor-pointer group select-none ${className}`}
+            className={`relative w-full rounded overflow-hidden shadow-md bg-black border border-gray-200/80 aspect-video cursor-pointer group select-none ${className}`}
         >
             {/* Background Thumbnail Image / Video Preview */}
             {thumbnail ? (

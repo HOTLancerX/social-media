@@ -301,7 +301,7 @@ export default function PostCard({
                 className="bg-white rounded border border-slate-100/90 shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.07)] transition-all duration-300 overflow-visible"
             >
                 {/* 1. Header Row */}
-                <div className="p-4 sm:p-5 flex items-center justify-between gap-3">
+                <div className="p-2 flex items-center justify-between gap-2">
                     <div className="flex items-center gap-3 min-w-0">
                         {/* User Avatar */}
                         <Link href={`/${currentPost.userSlug || currentPost.userName}`} className="shrink-0 group block transition-transform hover:scale-105">
