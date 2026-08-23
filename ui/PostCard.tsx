@@ -15,7 +15,7 @@ import ReactionSummary from './ReactionSummary';
 import FacebookEmoji from './FacebookEmoji';
 import CommentSection from './CommentSection';
 import EditPostModal from './EditPostModal';
-import type { ISocialPostData } from '../models/SocialMedia';
+import type { ISocialPostData, ILinkPreview } from '../models/SocialMedia';
 import type { ReactionType } from '../models/Like';
 
 interface PostCardProps {
@@ -28,6 +28,7 @@ interface PostCardProps {
     } | null;
     onPostDeleted?: (postId: string) => void;
     onPostUpdated?: (updatedPost: any) => void;
+    onOpenVideoModal?: (post: ISocialPostData) => void;
 }
 
 export default function PostCard({
@@ -35,11 +36,46 @@ export default function PostCard({
     currentUser,
     onPostDeleted,
     onPostUpdated,
+    onOpenVideoModal,
 }: PostCardProps) {
     const isAuthor = Boolean(currentUser?._id && String(currentUser._id) === String(post.userId));
     const isAdmin = currentUser?.type === 'admin';
 
     const [currentPost, setCurrentPost] = useState(post);
+    const [linkPreviewData, setLinkPreviewData] = useState<ILinkPreview | null>(post.linkPreview || null);
+
+    // Auto-resolve link preview if not present on post but URL is in content
+    useEffect(() => {
+        if (currentPost.linkPreview && currentPost.linkPreview.url) {
+            setLinkPreviewData(currentPost.linkPreview);
+            return;
+        }
+
+        if (
+            currentPost.type === 'text' &&
+            currentPost.content &&
+            (!currentPost.images || currentPost.images.length === 0) &&
+            (!currentPost.videos || currentPost.videos.length === 0)
+        ) {
+            const urlMatch = currentPost.content.match(/https?:\/\/[^\s]+/i);
+            if (urlMatch && urlMatch[0]) {
+                const detectedUrl = urlMatch[0].trim();
+                fetch('/api/social-media/scrape-url', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url: detectedUrl }),
+                })
+                    .then((r) => r.json())
+                    .then((res) => {
+                        if (res.preview) {
+                            setLinkPreviewData(res.preview);
+                        }
+                    })
+                    .catch(() => {});
+            }
+        }
+    }, [currentPost.linkPreview, currentPost.content, currentPost.type, currentPost.images, currentPost.videos]);
+
     const [userReaction, setUserReaction] = useState<ReactionType | null>(
         (post.userReaction as ReactionType) || null
     );
@@ -291,11 +327,7 @@ export default function PostCard({
                                     {currentPost.userName}
                                 </Link>
 
-                                {currentPost.userRole && currentPost.userRole !== 'User' && (
-                                    <span className="px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-indigo-50 text-indigo-600 uppercase tracking-wide">
-                                        {currentPost.userRole}
-                                    </span>
-                                )}
+                                
 
                                 {currentPost.feeling && (
                                     <span className="text-xs text-slate-500 font-normal">
@@ -498,6 +530,7 @@ export default function PostCard({
                             <VideoPost
                                 src={currentPost.videos[0]}
                                 title={currentPost.content?.slice(0, 60) || 'Featured Video'}
+                                onOpenReel={() => onOpenVideoModal?.(currentPost)}
                             />
                         </div>
                     )}
@@ -525,6 +558,70 @@ export default function PostCard({
                     {currentPost.sharedPost && (
                         <div className="px-4 pb-3">
                             <QuotePostCard sharedPost={currentPost.sharedPost} />
+                        </div>
+                    )}
+
+                    {/* G. Rich Link / Product Preview Card */}
+                    {linkPreviewData && linkPreviewData.url && (
+                        <div className="px-4 pb-3">
+                            <a
+                                href={linkPreviewData.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="block rounded-2xl overflow-hidden border border-gray-200/80 bg-gray-50/60 hover:bg-gray-100/80 hover:border-blue-300 transition-all duration-300 group shadow-2xs"
+                            >
+                                {linkPreviewData.image && (
+                                    <div className="w-full aspect-2/1 sm:aspect-[2.4/1] overflow-hidden bg-slate-900 relative">
+                                        <img
+                                            src={linkPreviewData.image}
+                                            alt={linkPreviewData.title || 'Link preview'}
+                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                            loading="lazy"
+                                        />
+                                        {linkPreviewData.price && (
+                                            <div className="absolute top-3 right-3 px-3 py-1 bg-emerald-600/95 text-white font-black text-xs rounded-full shadow-lg backdrop-blur-xs flex items-center gap-1 border border-white/20">
+                                                <Icon icon="solar:tag-price-bold" width={14} />
+                                                <span>
+                                                    {linkPreviewData.currency ? `${linkPreviewData.currency} ` : ''}
+                                                    {linkPreviewData.price}
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                                <div className="p-3.5 space-y-1.5">
+                                    <div className="flex items-center justify-between gap-2">
+                                        <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5 truncate">
+                                            {linkPreviewData.favicon && (
+                                                <img
+                                                    src={linkPreviewData.favicon}
+                                                    alt=""
+                                                    className="w-3.5 h-3.5 rounded-xs shrink-0"
+                                                />
+                                            )}
+                                            <span>
+                                                {linkPreviewData.siteName ||
+                                                    (() => {
+                                                        try {
+                                                            return new URL(linkPreviewData.url).hostname.replace(/^www\./i, '');
+                                                        } catch {
+                                                            return linkPreviewData.url;
+                                                        }
+                                                    })()}
+                                            </span>
+                                        </span>
+                                        <Icon icon="solar:arrow-right-up-linear" width={14} className="text-gray-400 group-hover:text-blue-600 transition shrink-0" />
+                                    </div>
+                                    <h4 className="font-bold text-gray-900 text-sm group-hover:text-blue-600 transition line-clamp-2 leading-snug">
+                                        {linkPreviewData.title || linkPreviewData.url}
+                                    </h4>
+                                    {linkPreviewData.description && (
+                                        <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">
+                                            {linkPreviewData.description}
+                                        </p>
+                                    )}
+                                </div>
+                            </a>
                         </div>
                     )}
 

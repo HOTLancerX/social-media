@@ -7,6 +7,108 @@ import { getAuthSession } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
 
+async function autoScrapeUrl(targetUrl: string): Promise<any | null> {
+    try {
+        if (!/^https?:\/\//i.test(targetUrl)) {
+            targetUrl = `https://${targetUrl}`;
+        }
+        const parsedUrl = new URL(targetUrl);
+        const hostname = parsedUrl.hostname.replace(/^www\./i, '');
+
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 6000);
+
+        const response = await fetch(targetUrl, {
+            headers: {
+                'User-Agent':
+                    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+                Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            },
+            signal: controller.signal,
+        });
+        clearTimeout(timeout);
+
+        if (!response.ok) {
+            return {
+                url: targetUrl,
+                title: hostname,
+                description: '',
+                image: '',
+                siteName: hostname,
+                favicon: `https://www.google.com/s2/favicons?domain=${hostname}&sz=64`,
+                price: null,
+                currency: '',
+                type: 'website',
+            };
+        }
+
+        const html = await response.text();
+
+        const decodeEntities = (str: string) =>
+            str
+                .replace(/&amp;/g, '&')
+                .replace(/&lt;/g, '<')
+                .replace(/&gt;/g, '>')
+                .replace(/&quot;/g, '"')
+                .replace(/&#39;/g, "'")
+                .replace(/&#x2F;/g, '/')
+                .replace(/&#(\d+);/g, (_, dec) => String.fromCharCode(dec));
+
+        const extractMeta = (nameOrProp: string): string | null => {
+            const escaped = nameOrProp.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
+            const regex1 = new RegExp(`<meta[^>]+(?:property|name)=["']${escaped}["'][^>]+content=["']([^"']+)["']`, 'i');
+            const regex2 = new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]+(?:property|name)=["']${escaped}["']`, 'i');
+            const match1 = html.match(regex1);
+            if (match1 && match1[1]) return decodeEntities(match1[1].trim());
+            const match2 = html.match(regex2);
+            if (match2 && match2[1]) return decodeEntities(match2[1].trim());
+            return null;
+        };
+
+        const resolveUrl = (rel: string) => {
+            try {
+                return new URL(rel, targetUrl).href;
+            } catch {
+                return rel;
+            }
+        };
+
+        let title = extractMeta('og:title') || extractMeta('twitter:title') || extractMeta('title') || '';
+        if (!title) {
+            const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+            if (titleMatch && titleMatch[1]) title = decodeEntities(titleMatch[1].trim());
+        }
+
+        let description = extractMeta('og:description') || extractMeta('twitter:description') || extractMeta('description') || '';
+        let image = extractMeta('og:image') || extractMeta('og:image:secure_url') || extractMeta('twitter:image') || '';
+        if (!image) {
+            const imgMatch = html.match(/<img[^>]+src=["']([^"']+\.(?:jpg|jpeg|png|webp|gif)[^"']*)["']/i);
+            if (imgMatch && imgMatch[1]) image = imgMatch[1];
+        }
+        if (image) image = resolveUrl(image);
+
+        let siteName = extractMeta('og:site_name') || hostname;
+        let favicon = `https://www.google.com/s2/favicons?domain=${hostname}&sz=64`;
+
+        let price: any = extractMeta('product:price:amount') || extractMeta('og:price:amount') || extractMeta('price') || null;
+        let currency = extractMeta('product:price:currency') || extractMeta('og:price:currency') || '';
+
+        return {
+            url: targetUrl,
+            title: title || hostname,
+            description: description || '',
+            image: image || '',
+            siteName,
+            favicon,
+            price,
+            currency,
+            type: extractMeta('og:type') || 'website',
+        };
+    } catch {
+        return null;
+    }
+}
+
 export async function GET(req: NextRequest) {
     try {
         await connectDB();
@@ -138,6 +240,7 @@ export async function POST(req: NextRequest) {
             images = [],
             videos = [],
             poll = null,
+            linkPreview = null,
             privacy = "public",
             tags = [],
             location = "",
@@ -226,6 +329,16 @@ export async function POST(req: NextRequest) {
             }
         }
 
+        // Auto-extract and scrape URL link preview if not provided by client
+        let finalLinkPreview = linkPreview && linkPreview.url ? linkPreview : null;
+        if (!finalLinkPreview && content) {
+            const urlMatch = content.match(/https?:\/\/[^\s]+/i);
+            if (urlMatch && urlMatch[0]) {
+                const detectedUrl = urlMatch[0].trim();
+                finalLinkPreview = await autoScrapeUrl(detectedUrl);
+            }
+        }
+
         const PostModel = getSocialPostModel();
         const newPost = await PostModel.create({
             userId,
@@ -239,6 +352,7 @@ export async function POST(req: NextRequest) {
             images: Array.isArray(images) ? images : [images].filter(Boolean),
             videos: Array.isArray(videos) ? videos : [videos].filter(Boolean),
             poll: formattedPoll,
+            linkPreview: finalLinkPreview,
             privacy,
             tags: extractedTags,
             location: location ? location.trim() : "",

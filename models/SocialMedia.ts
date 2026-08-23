@@ -58,6 +58,18 @@ export interface ISharedPostSnapshot {
     createdAt: string | Date;
 }
 
+export interface ILinkPreview {
+    url: string;
+    title?: string;
+    description?: string;
+    image?: string;
+    siteName?: string;
+    favicon?: string;
+    price?: string | number;
+    currency?: string;
+    type?: string;
+}
+
 export interface ISocialPostData {
     _id: string;
     shortId: string;
@@ -72,6 +84,7 @@ export interface ISocialPostData {
     images: string[];
     videos: string[];
     poll?: IPollData | null;
+    linkPreview?: ILinkPreview | null;
     sharedPostId?: string | null;
     sharedPost?: ISharedPostSnapshot | null;
     privacy: "public" | "members" | "private";
@@ -106,6 +119,7 @@ export interface ISocialPost extends Document {
     images: string[];
     videos: string[];
     poll?: IPollData;
+    linkPreview?: ILinkPreview | null;
     sharedPostId?: string | null;
     sharedPost?: ISharedPostSnapshot | null;
     privacy: "public" | "members" | "private";
@@ -188,6 +202,21 @@ const FeelingSchema = new Schema<IFeeling>(
     { _id: false }
 );
 
+const LinkPreviewSchema = new Schema<ILinkPreview>(
+    {
+        url: { type: String, required: true },
+        title: { type: String, default: "" },
+        description: { type: String, default: "" },
+        image: { type: String, default: "" },
+        siteName: { type: String, default: "" },
+        favicon: { type: String, default: "" },
+        price: { type: Schema.Types.Mixed, default: null },
+        currency: { type: String, default: "" },
+        type: { type: String, default: "" },
+    },
+    { _id: false }
+);
+
 const SharedPostSnapshotSchema = new Schema<ISharedPostSnapshot>(
     {
         _id: { type: String, required: true },
@@ -232,6 +261,7 @@ const SocialPostSchema = new Schema<ISocialPost>(
         images: { type: [String], default: [] },
         videos: { type: [String], default: [] },
         poll: { type: PollDataSchema, default: null },
+        linkPreview: { type: LinkPreviewSchema, default: null },
         sharedPostId: { type: String, default: null, index: true },
         sharedPost: { type: SharedPostSnapshotSchema, default: null },
         privacy: {

@@ -12,6 +12,7 @@ import ProfileVideos from './ProfileVideos';
 import ProfileSettings from './ProfileSettings';
 import PostForm from '../ui/PostForm';
 import PostCard from '../ui/PostCard';
+import VideoViewerModal from '../ui/VideoViewerModal';
 import { Icon } from '@iconify/react';
 import type { ISocialPostData } from '../models/SocialMedia';
 
@@ -35,6 +36,7 @@ export default function UserProfilePage({
     const [activeTab, setActiveTab] = useState<ProfileTab>(initialTab);
     const [posts, setPosts] = useState<ISocialPostData[]>([]);
     const [loadingPosts, setLoadingPosts] = useState(true);
+    const [activeVideoIndex, setActiveVideoIndex] = useState<number | null>(null);
 
     const [recentFriends, setRecentFriends] = useState<any[]>([]);
 
@@ -209,21 +211,7 @@ export default function UserProfilePage({
                             </div>
 
                             {/* Photos Widget */}
-                            <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 space-y-4">
-                                <div className="flex items-center justify-between">
-                                    <h3 className="font-black text-gray-900 text-sm uppercase tracking-wider">
-                                        Photos
-                                    </h3>
-                                    <button
-                                        type="button"
-                                        onClick={() => setActiveTab('photos')}
-                                        className="text-xs font-bold text-indigo-600 hover:underline cursor-pointer"
-                                    >
-                                        See all
-                                    </button>
-                                </div>
-                                <ProfilePhotos userId={user._id} />
-                            </div>
+                            <ProfilePhotos userId={user._id} onClick={() => setActiveTab('photos')} />
                         </div>
 
                         {/* Right Column: Timeline Stream */}
@@ -239,14 +227,25 @@ export default function UserProfilePage({
                                     ))}
                                 </div>
                             ) : posts.length > 0 ? (
-                                posts.map((post) => (
-                                    <PostCard
-                                        key={post._id}
-                                        post={post}
-                                        currentUser={effectiveCurrentUser}
-                                        onPostDeleted={handlePostDeleted}
-                                    />
-                                ))
+                                posts.map((post) => {
+                                    const videoPlaylist = posts.filter(
+                                        (p) => p.type === 'video' && p.videos && p.videos.length > 0
+                                    );
+                                    return (
+                                        <PostCard
+                                            key={post._id}
+                                            post={post}
+                                            currentUser={effectiveCurrentUser}
+                                            onPostDeleted={handlePostDeleted}
+                                            onOpenVideoModal={(clickedPost) => {
+                                                const idx = videoPlaylist.findIndex(
+                                                    (p) => String(p._id) === String(clickedPost._id)
+                                                );
+                                                setActiveVideoIndex(idx >= 0 ? idx : 0);
+                                            }}
+                                        />
+                                    );
+                                })
                             ) : (
                                 <div className="bg-white rounded-2xl p-12 text-center shadow-sm border border-gray-100 space-y-3">
                                     <div className="w-12 h-12 rounded-full bg-indigo-50 text-indigo-500 flex items-center justify-center mx-auto">
@@ -295,6 +294,30 @@ export default function UserProfilePage({
                     />
                 )}
             </div>
+            {/* Video Reels Fullscreen Modal */}
+            {activeVideoIndex !== null && (
+                (() => {
+                    const videoPlaylist = posts.filter(
+                        (p) => p.type === 'video' && p.videos && p.videos.length > 0
+                    );
+                    if (videoPlaylist.length === 0) return null;
+                    return (
+                        <VideoViewerModal
+                            videos={videoPlaylist}
+                            initialIndex={activeVideoIndex}
+                            currentUser={effectiveCurrentUser}
+                            onClose={() => setActiveVideoIndex(null)}
+                            onPostUpdated={(updatedPost) => {
+                                setPosts((prev) =>
+                                    prev.map((p) =>
+                                        String(p._id) === String(updatedPost._id) ? updatedPost : p
+                                    )
+                                );
+                            }}
+                        />
+                    );
+                })()
+            )}
         </div>
     );
 }

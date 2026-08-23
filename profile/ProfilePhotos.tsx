@@ -6,12 +6,15 @@ import { createPortal } from 'react-dom';
 
 interface ProfilePhotosProps {
     userId: string;
+    onClick?: () => void;
 }
 
-export default function ProfilePhotos({ userId }: ProfilePhotosProps) {
+export default function ProfilePhotos({ userId, onClick }: ProfilePhotosProps) {
     const [photos, setPhotos] = useState<string[]>([]);
     const [loading, setLoading] = useState(true);
     const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+
+    const isWidget = Boolean(onClick);
 
     useEffect(() => {
         setLoading(true);
@@ -30,6 +33,69 @@ export default function ProfilePhotos({ userId }: ProfilePhotosProps) {
             .finally(() => setLoading(false));
     }, [userId]);
 
+    const nextImage = (e?: React.MouseEvent) => {
+        e?.stopPropagation();
+        if (lightboxIndex !== null && photos.length > 0) {
+            setLightboxIndex((lightboxIndex + 1) % photos.length);
+        }
+    };
+
+    const prevImage = (e?: React.MouseEvent) => {
+        e?.stopPropagation();
+        if (lightboxIndex !== null && photos.length > 0) {
+            setLightboxIndex((lightboxIndex - 1 + photos.length) % photos.length);
+        }
+    };
+
+    // ── 1. Compact Sidebar Widget Mode (When onClick is passed) ──
+    if (isWidget) {
+        return (
+            <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 space-y-4">
+                <div className="flex items-center justify-between">
+                    <h3 className="font-black text-gray-900 text-sm uppercase tracking-wider flex items-center gap-2">
+                        <Icon icon="solar:gallery-wide-bold" className="text-indigo-600" width={18} />
+                        Photos {photos.length > 0 && <span className="text-xs font-semibold text-gray-400">({photos.length})</span>}
+                    </h3>
+                    <button
+                        type="button"
+                        onClick={onClick}
+                        className="text-xs font-bold text-indigo-600 hover:underline cursor-pointer"
+                    >
+                        See all
+                    </button>
+                </div>
+
+                {loading ? (
+                    <div className="grid grid-cols-3 gap-2">
+                        {[1, 2, 3, 4, 5, 6].map((n) => (
+                            <div key={n} className="aspect-square rounded-xl bg-gray-100 animate-pulse" />
+                        ))}
+                    </div>
+                ) : photos.length > 0 ? (
+                    <div className="grid grid-cols-3 gap-2">
+                        {photos.slice(0, 9).map((img, idx) => (
+                            <div
+                                key={idx}
+                                onClick={onClick}
+                                className="aspect-square rounded-xl overflow-hidden bg-gray-100 cursor-pointer group relative border border-gray-100 hover:border-indigo-300 transition shadow-2xs"
+                            >
+                                <img
+                                    src={img}
+                                    alt={`Photo ${idx + 1}`}
+                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                    loading="lazy"
+                                />
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <p className="text-xs text-gray-400 text-center py-4">No photos uploaded yet</p>
+                )}
+            </div>
+        );
+    }
+
+    // ── 2. Full Dedicated Tab Mode ──
     return (
         <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 md:p-8 space-y-6">
             <div>
@@ -73,65 +139,69 @@ export default function ProfilePhotos({ userId }: ProfilePhotosProps) {
                     <div className="w-14 h-14 rounded-full bg-indigo-50 text-indigo-500 flex items-center justify-center mx-auto">
                         <Icon icon="solar:gallery-wide-bold" width={28} />
                     </div>
-                    <p className="text-sm font-bold text-gray-700">No photos uploaded yet</p>
-                    <p className="text-xs text-gray-400">Photos posted by this user will appear here.</p>
+                    <h4 className="text-sm font-bold text-gray-800">No Photos Yet</h4>
+                    <p className="text-xs text-gray-400 max-w-sm mx-auto">
+                        Photos attached to posts and media updates will appear in this gallery.
+                    </p>
                 </div>
             )}
 
-            {/* Lightbox */}
-            {lightboxIndex !== null &&
-                typeof document !== 'undefined' &&
-                createPortal(
-                    <div
-                        className="fixed inset-0 z-99999 bg-black/95 backdrop-blur-md flex flex-col items-center justify-between p-4 select-none animate-in fade-in"
+            {/* Lightbox Modal */}
+            {lightboxIndex !== null && typeof document !== 'undefined' && createPortal(
+                <div
+                    className="fixed inset-0 z-99999 bg-black/95 backdrop-blur-md flex items-center justify-center p-4 select-none animate-in fade-in"
+                    onClick={() => setLightboxIndex(null)}
+                >
+                    {/* Close button */}
+                    <button
+                        type="button"
                         onClick={() => setLightboxIndex(null)}
+                        className="absolute top-5 right-5 p-2 rounded-full text-white/70 hover:text-white hover:bg-white/10 transition z-50 cursor-pointer"
                     >
-                        <div className="w-full flex items-center justify-between text-white p-2">
-                            <span className="text-xs font-bold text-gray-300">
-                                {lightboxIndex + 1} / {photos.length}
-                            </span>
-                            <button
-                                type="button"
-                                onClick={() => setLightboxIndex(null)}
-                                className="p-2 rounded-full hover:bg-white/10 text-white"
-                            >
-                                <Icon icon="solar:close-circle-bold" width={28} />
-                            </button>
-                        </div>
+                        <Icon icon="solar:close-circle-bold" width={32} />
+                    </button>
 
-                        <div className="relative max-w-4xl max-h-[80vh] flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
-                            <img
-                                src={photos[lightboxIndex]}
-                                alt="Expanded view"
-                                className="max-w-full max-h-[80vh] object-contain rounded-2xl shadow-2xl"
-                            />
-                        </div>
+                    {/* Counter */}
+                    <div className="absolute top-5 left-5 text-white/80 text-xs font-bold bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10">
+                        {lightboxIndex + 1} / {photos.length}
+                    </div>
 
-                        <div className="flex items-center gap-3 py-2">
-                            <button
-                                type="button"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    setLightboxIndex((lightboxIndex - 1 + photos.length) % photos.length);
-                                }}
-                                className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold backdrop-blur-md transition"
-                            >
-                                ‹ Previous
-                            </button>
-                            <button
-                                type="button"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    setLightboxIndex((lightboxIndex + 1) % photos.length);
-                                }}
-                                className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold backdrop-blur-md transition"
-                            >
-                                Next ›
-                            </button>
-                        </div>
-                    </div>,
-                    document.body
-                )}
+                    {/* Previous button */}
+                    {photos.length > 1 && (
+                        <button
+                            type="button"
+                            onClick={prevImage}
+                            className="absolute left-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white/10 hover:bg-white/20 text-white backdrop-blur-md transition cursor-pointer border border-white/10"
+                        >
+                            <Icon icon="solar:alt-arrow-left-bold" width={24} />
+                        </button>
+                    )}
+
+                    {/* Image */}
+                    <div
+                        className="max-w-5xl max-h-[85vh] flex items-center justify-center overflow-hidden"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <img
+                            src={photos[lightboxIndex]}
+                            alt="Expanded photo"
+                            className="max-w-full max-h-[85vh] object-contain rounded-2xl shadow-2xl"
+                        />
+                    </div>
+
+                    {/* Next button */}
+                    {photos.length > 1 && (
+                        <button
+                            type="button"
+                            onClick={nextImage}
+                            className="absolute right-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white/10 hover:bg-white/20 text-white backdrop-blur-md transition cursor-pointer border border-white/10"
+                        >
+                            <Icon icon="solar:alt-arrow-right-bold" width={24} />
+                        </button>
+                    )}
+                </div>,
+                document.body
+            )}
         </div>
     );
 }

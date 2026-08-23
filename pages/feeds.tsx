@@ -7,6 +7,8 @@ import { Icon } from '@iconify/react';
 import PostForm from '../ui/PostForm';
 import PostCard from '../ui/PostCard';
 import StoriesBar from '../ui/StoriesBar';
+import ReelsFeedBar from '../ui/ReelsFeedBar';
+import VideoViewerModal from '../ui/VideoViewerModal';
 import type { ISocialPostData } from '../models/SocialMedia';
 
 type FeedTab = 'all' | 'image' | 'video' | 'poll' | 'popular' | 'my-posts' | 'saves';
@@ -24,6 +26,7 @@ export default function SocialFeedsPage() {
     const [loadingMore, setLoadingMore] = useState(false);
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(false);
+    const [activeVideoIndex, setActiveVideoIndex] = useState<number | null>(null);
 
     // Sidebar Social Data
     const [pendingRequests, setPendingRequests] = useState<any[]>([]);
@@ -324,14 +327,38 @@ export default function SocialFeedsPage() {
                             </div>
                         ) : (
                             <div className="space-y-5">
-                                {posts.map((post) => (
-                                    <PostCard
-                                        key={String(post._id)}
-                                        post={post}
-                                        currentUser={currentUser}
-                                        onPostDeleted={handlePostDeleted}
-                                    />
-                                ))}
+                                {posts.map((post, postIdx) => {
+                                    const videoPlaylist = posts.filter(
+                                        (p) => p.type === 'video' && p.videos && p.videos.length > 0
+                                    );
+                                    return (
+                                        <React.Fragment key={String(post._id)}>
+                                            <PostCard
+                                                post={post}
+                                                currentUser={currentUser}
+                                                onPostDeleted={handlePostDeleted}
+                                                onOpenVideoModal={(clickedPost) => {
+                                                    const idx = videoPlaylist.findIndex(
+                                                        (p) => String(p._id) === String(clickedPost._id)
+                                                    );
+                                                    setActiveVideoIndex(idx >= 0 ? idx : 0);
+                                                }}
+                                            />
+
+                                            {/* Suggested Reels Carousel after 5 posts */}
+                                            {postIdx === 4 && (
+                                                <ReelsFeedBar
+                                                    onSelectReel={(selectedReel) => {
+                                                        const idx = videoPlaylist.findIndex(
+                                                            (p) => String(p._id) === String(selectedReel._id)
+                                                        );
+                                                        setActiveVideoIndex(idx >= 0 ? idx : 0);
+                                                    }}
+                                                />
+                                            )}
+                                        </React.Fragment>
+                                    );
+                                })}
 
                                 {/* Load More Button */}
                                 {hasMore && (
@@ -533,6 +560,31 @@ export default function SocialFeedsPage() {
                     </aside>
                 </div>
             </div>
+
+            {/* Fullscreen Video Reels & Watch Modal */}
+            {activeVideoIndex !== null && (
+                (() => {
+                    const videoPlaylist = posts.filter(
+                        (p) => p.type === 'video' && p.videos && p.videos.length > 0
+                    );
+                    if (videoPlaylist.length === 0) return null;
+                    return (
+                        <VideoViewerModal
+                            videos={videoPlaylist}
+                            initialIndex={activeVideoIndex}
+                            currentUser={currentUser}
+                            onClose={() => setActiveVideoIndex(null)}
+                            onPostUpdated={(updatedPost) => {
+                                setPosts((prev) =>
+                                    prev.map((p) =>
+                                        String(p._id) === String(updatedPost._id) ? updatedPost : p
+                                    )
+                                );
+                            }}
+                        />
+                    );
+                })()
+            )}
         </div>
     );
 }

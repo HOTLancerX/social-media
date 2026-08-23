@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Icon } from '@iconify/react';
 import VideoPost from '../ui/Video';
+import VideoViewerModal from '../ui/VideoViewerModal';
 
 interface ProfileVideosProps {
     userId: string;
@@ -11,6 +12,7 @@ interface ProfileVideosProps {
 export default function ProfileVideos({ userId }: ProfileVideosProps) {
     const [videos, setVideos] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [activeVideoIndex, setActiveVideoIndex] = useState<number | null>(null);
 
     useEffect(() => {
         setLoading(true);
@@ -43,11 +45,12 @@ export default function ProfileVideos({ userId }: ProfileVideosProps) {
                 </div>
             ) : videos.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                    {videos.map((post) => (
+                    {videos.map((post, idx) => (
                         <div key={post._id} className="space-y-2">
                             <VideoPost
                                 src={post.videos?.[0]}
                                 title={post.content?.slice(0, 50) || 'Video'}
+                                onOpenReel={() => setActiveVideoIndex(idx)}
                             />
                             {post.content && (
                                 <p className="text-xs font-semibold text-gray-800 line-clamp-2 px-1">
@@ -65,6 +68,22 @@ export default function ProfileVideos({ userId }: ProfileVideosProps) {
                     <p className="text-sm font-bold text-gray-700">No videos uploaded yet</p>
                     <p className="text-xs text-gray-400">Videos and reels shared by this user will appear here.</p>
                 </div>
+            )}
+
+            {/* Video Reels Fullscreen Modal */}
+            {activeVideoIndex !== null && videos.length > 0 && (
+                <VideoViewerModal
+                    videos={videos}
+                    initialIndex={activeVideoIndex}
+                    onClose={() => setActiveVideoIndex(null)}
+                    onPostUpdated={(updatedPost) => {
+                        setVideos((prev) =>
+                            prev.map((p) =>
+                                String(p._id) === String(updatedPost._id) ? updatedPost : p
+                            )
+                        );
+                    }}
+                />
             )}
         </div>
     );
