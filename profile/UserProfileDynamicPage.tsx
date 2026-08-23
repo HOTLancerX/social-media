@@ -105,7 +105,7 @@ export default function UserProfileDynamicPage({
                     This user profile does not exist or may have been removed.
                 </p>
                 <a
-                    href="/feeds"
+                    href="/"
                     className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-2xl shadow-md transition"
                 >
                     Back to Feeds

@@ -205,8 +205,8 @@ export default function SocialHeader({
 
     const loggedOutTabs = [
         { id: 'home', label: 'Website Home', href: '/', icon: 'solar:home-2-bold', active: pathname === '/' },
-        { id: 'feeds', label: 'Explore Feeds', href: '/feeds', icon: 'solar:feed-bold', active: pathname === '/feeds' || pathname.startsWith('/post') },
-        { id: 'popular', label: 'Trending Posts', href: '/feeds?type=popular', icon: 'solar:fire-bold', active: pathname.includes('type=popular') },
+        { id: 'feeds', label: 'Explore Feeds', href: '/', icon: 'solar:feed-bold', active: pathname === '/' || pathname.startsWith('/post') },
+        { id: 'popular', label: 'Trending Posts', href: '/?type=popular', icon: 'solar:fire-bold', active: pathname.includes('type=popular') },
     ];
 
     const currentTabs = isLoggedIn ? loggedInTabs : loggedOutTabs;
@@ -230,12 +230,12 @@ export default function SocialHeader({
 
     const sidebarMenuItems = [
         { label: 'Newsfeed', href: '/', icon: 'solar:tv-linear', active: pathname === '/' },
-        { label: 'Overview', href: user?.slug ? `/${user.slug}` : '/feeds', icon: 'solar:graph-bold', active: pathname === `/${user?.slug}` },
-        { label: 'Groups', href: '/feeds/groups', icon: 'solar:users-group-two-rounded-linear', active: pathname.includes('/groups') },
-        { label: 'Members', href: user?.slug ? `/${user.slug}/friends` : '/feeds', icon: 'solar:user-linear', active: pathname.includes('/friends') },
+        { label: 'Overview', href: user?.slug ? `/${user.slug}` : '/', icon: 'solar:graph-bold', active: pathname === `/${user?.slug}` },
+        { label: 'Groups', href: '/groups', icon: 'solar:users-group-two-rounded-linear', active: pathname.includes('/groups') },
+        { label: 'Members', href: user?.slug ? `/${user.slug}/friends` : '/', icon: 'solar:user-linear', active: pathname.includes('/friends') },
         { label: 'Badges', href: '/badges', icon: 'solar:medal-ribbon-linear', active: pathname === '/badges' },
         { label: 'Quests', href: '/quests', icon: 'solar:star-linear', active: pathname === '/quests' },
-        { label: 'Streams', href: '/feeds?type=video', icon: 'solar:play-circle-linear', active: pathname.includes('type=video') },
+        { label: 'Streams', href: '/?type=video', icon: 'solar:play-circle-linear', active: pathname.includes('type=video') },
         { label: 'Events', href: '/events', icon: 'solar:calendar-linear', active: pathname === '/events' },
         { label: 'Forums', href: '/forums', icon: 'solar:chat-round-line-linear', active: pathname === '/forums' },
         { label: 'Marketplace', href: '/shop', icon: 'solar:bag-3-linear', active: pathname === '/shop' || pathname.startsWith('/product') },
@@ -246,7 +246,7 @@ export default function SocialHeader({
             <div className="container h-16 flex items-center justify-between gap-2 sm:gap-4">
                 {/* ── 1. LEFT: Logo Branding & Search ── */}
                 <div className="flex items-center gap-3 shrink-0">
-                    <Link href="/feeds" className="flex items-center gap-2.5 group">
+                    <Link href="/" className="flex items-center gap-2.5 group">
                         {settings.logo ? (
                             <img
                                 src={settings.logo}
@@ -341,7 +341,7 @@ export default function SocialHeader({
                                             Create
                                         </p>
                                         <Link
-                                            href="/feeds"
+                                            href="/"
                                             onClick={() => setCreateDropdownOpen(false)}
                                             className="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition"
                                         >
@@ -349,7 +349,7 @@ export default function SocialHeader({
                                             <span>New Feed Post</span>
                                         </Link>
                                         <Link
-                                            href="/feeds"
+                                            href="/"
                                             onClick={() => setCreateDropdownOpen(false)}
                                             className="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition"
                                         >
@@ -713,7 +713,7 @@ export default function SocialHeader({
                         {/* Hexagonal Mini Avatar at Top */}
                         <div className="pt-3.5 pb-2 px-2 flex justify-center shrink-0">
                             <Link
-                                href={user?.slug ? `/${user.slug}` : '/feeds'}
+                                href={user?.slug ? `/${user.slug}` : '/'}
                                 title={user?.name || 'Profile'}
                                 className="block transition-transform hover:scale-105 active:scale-95"
                             >
@@ -935,7 +935,7 @@ export default function SocialHeader({
                             <div className={`p-1 rounded-xl transition-all ${item.active ? 'bg-indigo-50 shadow-2xs' : ''}`}>
                                 <Icon icon={item.icon} width={20} className={item.active ? 'scale-110' : ''} />
                             </div>
-                            <span className="text-[10px] leading-none truncate max-w-[62px]">{item.label}</span>
+                            <span className="text-[10px] leading-none truncate max-w-15.5">{item.label}</span>
                         </Link>
                     ))}
 

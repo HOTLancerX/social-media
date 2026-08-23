@@ -276,7 +276,7 @@ export default function PostCard({
 
     const handleCopyLink = () => {
         const postSlug = currentPost.shortId || currentPost._id;
-        const url = `${window.location.origin}/feeds#post-${postSlug}`;
+        const url = `${window.location.origin}/#post-${postSlug}`;
         navigator.clipboard.writeText(url);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
@@ -629,7 +629,7 @@ export default function PostCard({
                             {currentPost.tags.map((tag, idx) => (
                                 <a
                                     key={idx}
-                                    href={`/feeds?tag=${encodeURIComponent(tag.replace(/^#/, ''))}`}
+                                    href={`/?tag=${encodeURIComponent(tag.replace(/^#/, ''))}`}
                                     className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-indigo-50/80 hover:bg-indigo-100/90 text-indigo-600 transition"
                                 >
                                     #{tag.replace(/^#/, '')}

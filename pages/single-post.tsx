@@ -68,7 +68,7 @@ export default function SinglePostPage({ postId: propPostId }: SinglePostPagePro
             <div className="bg-white border-b border-gray-200 sticky top-0 z-30 shadow-xs">
                 <div className="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
                     <a
-                        href="/feeds"
+                        href="/"
                         className="inline-flex items-center gap-2 text-xs font-bold text-gray-700 hover:text-blue-600 transition"
                     >
                         <Icon icon="solar:arrow-left-bold" width={18} />
@@ -111,7 +111,7 @@ export default function SinglePostPage({ postId: propPostId }: SinglePostPagePro
                             This post may have been removed or the link might be broken.
                         </p>
                         <a
-                            href="/feeds"
+                            href="/"
                             className="inline-block px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-xs transition"
                         >
                             Explore Feeds
@@ -123,7 +123,7 @@ export default function SinglePostPage({ postId: propPostId }: SinglePostPagePro
                             post={post}
                             currentUser={currentUser}
                             onPostDeleted={() => {
-                                window.location.href = '/feeds';
+                                window.location.href = '/';
                             }}
                         />
                     </div>

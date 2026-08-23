@@ -44,7 +44,7 @@ export default function ShareModal({
 
     const origin = typeof window !== 'undefined' ? window.location.origin : '';
     const postSlug = post.shortId || post._id;
-    const postUrl = `${origin}/feeds#post-${postSlug}`;
+    const postUrl = `${origin}/#post-${postSlug}`;
     const shareText = `Check out this post by ${post.userName}: "${post.content?.slice(0, 100) || 'Social Post'}"`;
 
     const socialNetworks = [
