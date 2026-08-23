@@ -56,21 +56,21 @@ export async function GET(req: NextRequest) {
         }
 
         const [friendsCount, postsCount, photosCount, videosCount] = await Promise.all([
-            Friendship.countDocuments({
+            (Friendship as any).countDocuments({
                 $or: friendOrConditions,
                 status: 'accepted',
             }),
-            SocialPost.countDocuments({
+            (SocialPost as any).countDocuments({
                 $or: [{ userId: userStrId }, ...(userObjId ? [{ userId: userObjId }] : [])],
                 status: 'published',
             }),
-            SocialPost.countDocuments({
-                userId: user._id,
+            (SocialPost as any).countDocuments({
+                userId: String(user._id),
                 type: 'image',
                 status: 'published',
             }),
-            SocialPost.countDocuments({
-                userId: user._id,
+            (SocialPost as any).countDocuments({
+                userId: String(user._id),
                 type: 'video',
                 status: 'published',
             }),
