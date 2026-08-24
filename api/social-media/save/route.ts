@@ -14,26 +14,31 @@ export async function GET(req: NextRequest) {
         const sessionUser = await getAuthSession(req);
         const { searchParams } = new URL(req.url);
         const postId = searchParams.get("postId");
-        const guestId = searchParams.get("guestId");
 
-        const userId = sessionUser?._id || guestId;
-
-        if (!userId) {
-            return NextResponse.json({ posts: [], savedIds: [], isSaved: false });
+        const currentUserId = sessionUser?._id || (sessionUser as any)?.id;
+        if (!currentUserId) {
+            return NextResponse.json({ posts: [], savedIds: [], total: 0, isSaved: false, authenticated: false });
         }
 
+        const userId = String(currentUserId);
         const SaveModel = getSocialSaveModel();
 
-        // If asking for a single post's saved status
+        // If asking for a single post's saved status for current user
         if (postId) {
-            const exists = await SaveModel.exists({ postId, userId });
+            const exists = await (SaveModel as any).exists({
+                postId,
+                $or: [
+                    { userId },
+                    ...(mongoose.Types.ObjectId.isValid(userId) ? [{ userId: new mongoose.Types.ObjectId(userId) }] : []),
+                ],
+            });
             return NextResponse.json({ isSaved: Boolean(exists) });
         }
 
-        // Fetch all saved posts for this user
+        // Fetch strictly only this user's saved post IDs
         const savedPostIds = await getUserSavedPostIds(userId);
         if (savedPostIds.length === 0) {
-            return NextResponse.json({ posts: [], total: 0 });
+            return NextResponse.json({ posts: [], total: 0, savedIds: [] });
         }
 
         const PostModel = getSocialPostModel();
@@ -41,31 +46,32 @@ export async function GET(req: NextRequest) {
             .filter((id) => mongoose.Types.ObjectId.isValid(id))
             .map((id) => new mongoose.Types.ObjectId(id));
 
-        const posts = await PostModel.find({
+        const posts = await (PostModel as any).find({
             $or: [
                 { _id: { $in: validObjectIds } },
+                { _id: { $in: savedPostIds } },
                 { shortId: { $in: savedPostIds } },
             ],
-            status: "published",
+            status: { $nin: ["deleted", "archived"] },
         }).lean();
 
         // Get user reactions for these posts
         let userReactionsMap: Record<string, string> = {};
         if (posts.length > 0) {
-            const postIds = posts.map((p) => String(p._id));
+            const postIds = posts.map((p: any) => String(p._id));
             const LikeModel = getSocialLikeModel();
-            const userLikes = await LikeModel.find({
+            const userLikes = await (LikeModel as any).find({
                 targetType: "post",
                 targetId: { $in: postIds },
                 userId,
             }).lean();
 
-            userLikes.forEach((l) => {
+            userLikes.forEach((l: any) => {
                 userReactionsMap[l.targetId] = l.reaction;
             });
         }
 
-        const formattedPosts = posts.map((post) => ({
+        const formattedPosts = posts.map((post: any) => ({
             ...post,
             _id: String(post._id),
             userReaction: userReactionsMap[String(post._id)] || null,
@@ -88,22 +94,28 @@ export async function POST(req: NextRequest) {
         await connectDB();
         const sessionUser = await getAuthSession(req);
         const body = await req.json();
-        const { postId, guestUser = null } = body;
+        const { postId } = body;
 
         if (!postId) {
             return NextResponse.json({ error: "Post ID is required" }, { status: 400 });
         }
 
-        let userId = sessionUser?._id;
-        let userName = sessionUser?.name;
-        let userImage = sessionUser?.image || "";
-
-        if (!userId) {
+        if (!sessionUser?._id) {
             return NextResponse.json({ error: "Authentication required. Please log in to save posts." }, { status: 401 });
         }
 
+        const userId = String(sessionUser._id);
+        const userName = sessionUser.name || "Member";
+        const userImage = sessionUser.image || "";
+
         const SaveModel = getSocialSaveModel();
-        const existingSave = await SaveModel.findOne({ postId, userId });
+        const existingSave: any = await (SaveModel as any).findOne({
+            postId,
+            $or: [
+                { userId },
+                ...(mongoose.Types.ObjectId.isValid(userId) ? [{ userId: new mongoose.Types.ObjectId(userId) }] : []),
+            ],
+        });
 
         if (existingSave) {
             // Already saved -> Unsave (Delete)

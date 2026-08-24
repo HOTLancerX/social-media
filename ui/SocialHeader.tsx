@@ -197,15 +197,16 @@ export default function SocialHeader({
     // Navigation links for Logged In vs Logged Out users
     const loggedInTabs = [
         { id: 'home', label: 'Website Home', href: '/', icon: 'solar:home-2-bold', active: pathname === '/' },
-        { id: 'friends', label: 'Friends', href: `${profileUrl}/friends`, icon: 'solar:users-group-rounded-bold', active: pathname.endsWith('/friends') },
+        { id: 'videos', label: 'Watch Videos', href: '/videos', icon: 'solar:videocamera-record-bold', active: pathname === '/videos' },
+        { id: 'members', label: 'Members', href: '/members', icon: 'solar:users-group-rounded-bold', active: pathname === '/members' },
         { id: 'saves', label: 'Saved', href: '/saves', icon: 'solar:bookmark-bold', active: pathname === '/saves' },
         { id: 'photos', label: 'Photos', href: `${profileUrl}/photos`, icon: 'solar:gallery-wide-bold', active: pathname.endsWith('/photos') },
-        { id: 'videos', label: 'Videos & Reels', href: `${profileUrl}/videos`, icon: 'solar:videocamera-record-bold', active: pathname.endsWith('/videos') },
     ];
 
     const loggedOutTabs = [
         { id: 'home', label: 'Website Home', href: '/', icon: 'solar:home-2-bold', active: pathname === '/' },
-        { id: 'feeds', label: 'Explore Feeds', href: '/', icon: 'solar:feed-bold', active: pathname === '/' || pathname.startsWith('/post') },
+        { id: 'videos', label: 'Watch Videos', href: '/videos', icon: 'solar:videocamera-record-bold', active: pathname === '/videos' },
+        { id: 'members', label: 'Members', href: '/members', icon: 'solar:users-group-rounded-bold', active: pathname === '/members' },
         { id: 'popular', label: 'Trending Posts', href: '/?type=popular', icon: 'solar:fire-bold', active: pathname.includes('type=popular') },
     ];
 
@@ -230,12 +231,13 @@ export default function SocialHeader({
 
     const sidebarMenuItems = [
         { label: 'Newsfeed', href: '/', icon: 'solar:tv-linear', active: pathname === '/' },
+        { label: 'Watch Videos', href: '/videos', icon: 'solar:play-circle-linear', active: pathname === '/videos' },
         { label: 'Overview', href: user?.slug ? `/${user.slug}` : '/', icon: 'solar:graph-bold', active: pathname === `/${user?.slug}` },
+        { label: 'Members', href: '/members', icon: 'solar:user-linear', active: pathname === '/members' },
+        { label: 'Saved', href: '/saves', icon: 'solar:bookmark-linear', active: pathname === '/saves' },
         { label: 'Groups', href: '/groups', icon: 'solar:users-group-two-rounded-linear', active: pathname.includes('/groups') },
-        { label: 'Members', href: user?.slug ? `/${user.slug}/friends` : '/', icon: 'solar:user-linear', active: pathname.includes('/friends') },
         { label: 'Badges', href: '/badges', icon: 'solar:medal-ribbon-linear', active: pathname === '/badges' },
         { label: 'Quests', href: '/quests', icon: 'solar:star-linear', active: pathname === '/quests' },
-        { label: 'Streams', href: '/?type=video', icon: 'solar:play-circle-linear', active: pathname.includes('type=video') },
         { label: 'Events', href: '/events', icon: 'solar:calendar-linear', active: pathname === '/events' },
         { label: 'Forums', href: '/forums', icon: 'solar:chat-round-line-linear', active: pathname === '/forums' },
         { label: 'Marketplace', href: '/shop', icon: 'solar:bag-3-linear', active: pathname === '/shop' || pathname.startsWith('/product') },
@@ -609,6 +611,24 @@ export default function SocialHeader({
                                             >
                                                 <Icon icon="solar:videocamera-record-bold" width={18} className="text-purple-500" />
                                                 <span>Videos & Reels</span>
+                                            </Link>
+
+                                            <Link
+                                                href="/saves"
+                                                onClick={() => setUserDropdownOpen(false)}
+                                                className="flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-bold text-gray-700 hover:bg-gray-100 transition"
+                                            >
+                                                <Icon icon="solar:bookmark-bold" width={18} className="text-amber-500" />
+                                                <span>Saved Posts</span>
+                                            </Link>
+
+                                            <Link
+                                                href="/members"
+                                                onClick={() => setUserDropdownOpen(false)}
+                                                className="flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-bold text-gray-700 hover:bg-gray-100 transition"
+                                            >
+                                                <Icon icon="solar:users-group-rounded-bold" width={18} className="text-indigo-600" />
+                                                <span>Members Directory</span>
                                             </Link>
 
                                             <Link

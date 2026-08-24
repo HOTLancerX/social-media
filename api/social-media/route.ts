@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import mongoose from "mongoose";
 import connectDB from "@/lib/mongodb";
 import { getSocialPostModel, type PostType } from "../../models/SocialMedia";
 import { getSocialLikeModel } from "../../models/Like";
 import { getFriendshipModel } from "../../models/Friendship";
+import { getUserSavedPostIds } from "../../models/Saves";
 import { getAuthSession } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
@@ -156,8 +158,39 @@ export async function GET(req: NextRequest) {
             );
         }
 
-        // Type filter
-        if (type === "friends") {
+        const tab = searchParams.get("tab");
+
+        // Saves tab / type filter (strictly user's own saved posts)
+        if (tab === "saves" || type === "saves") {
+            if (!currentUserId) {
+                return NextResponse.json({
+                    posts: [],
+                    page,
+                    limit,
+                    total: 0,
+                    hasMore: false,
+                    savedIds: [],
+                });
+            }
+            const savedPostIds = await getUserSavedPostIds(String(currentUserId));
+            if (savedPostIds.length === 0) {
+                return NextResponse.json({
+                    posts: [],
+                    page,
+                    limit,
+                    total: 0,
+                    hasMore: false,
+                    savedIds: [],
+                });
+            }
+            const validObjectIds = savedPostIds
+                .filter((id) => mongoose.Types.ObjectId.isValid(id))
+                .map((id) => new mongoose.Types.ObjectId(id));
+            query.$or = [
+                { _id: { $in: validObjectIds } },
+                { shortId: { $in: savedPostIds } },
+            ];
+        } else if (type === "friends") {
             if (currentUserId && friendIds.length > 0) {
                 query.userId = { $in: [...friendIds, currentUserId] };
             } else if (currentUserId) {

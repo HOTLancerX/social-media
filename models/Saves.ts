@@ -51,8 +51,13 @@ export async function getUserSavedPostIds(userId: string): Promise<string[]> {
     if (!userId) return [];
     await connectDB();
     const SaveModel = getSocialSaveModel();
-    const saves = await SaveModel.find({ userId }).sort({ createdAt: -1 }).select("postId").lean();
-    return saves.map((s) => String(s.postId));
+    const uStr = String(userId);
+    const orConds: any[] = [{ userId: uStr }];
+    if (mongoose.Types.ObjectId.isValid(uStr)) {
+        orConds.push({ userId: new mongoose.Types.ObjectId(uStr) });
+    }
+    const saves = await (SaveModel as any).find({ $or: orConds }).sort({ createdAt: -1 }).select("postId").lean();
+    return saves.map((s: any) => String(s.postId));
 }
 
 export default getSocialSaveModel;

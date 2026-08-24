@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { Icon } from '@iconify/react';
 import PostForm from '../ui/PostForm';
@@ -17,12 +18,18 @@ type FeedTab = 'all' | 'image' | 'video' | 'poll' | 'popular' | 'my-posts' | 'sa
 export default function SocialFeedsPage() {
     const { data: session } = useSession();
     const currentUser = (session?.user as any) || null;
+    const searchParams = useSearchParams();
 
-    const [activeTab, setActiveTab] = useState<FeedTab>('all');
-    const [searchQuery, setSearchQuery] = useState('');
-    const [activeTag, setActiveTag] = useState<string | null>(null);
+    const urlType = searchParams.get('type') || searchParams.get('tab') || 'all';
+    const urlTag = searchParams.get('tag') || null;
+    const urlSearch = searchParams.get('search') || '';
+
+    const activeTab: FeedTab = (['image', 'video', 'poll', 'popular', 'my-posts', 'saves'].includes(urlType) ? urlType : 'all') as FeedTab;
+    const [searchQuery, setSearchQuery] = useState(urlSearch);
+    const [activeTag, setActiveTag] = useState<string | null>(urlTag);
 
     const [posts, setPosts] = useState<ISocialPostData[]>([]);
+    const [newIncomingPosts, setNewIncomingPosts] = useState<ISocialPostData[]>([]);
     const [loading, setLoading] = useState(true);
     const [loadingMore, setLoadingMore] = useState(false);
     const [page, setPage] = useState(1);
@@ -34,15 +41,11 @@ export default function SocialFeedsPage() {
     const [friendsList, setFriendsList] = useState<any[]>([]);
     const [loadingFriends, setLoadingFriends] = useState(false);
 
-    // Initial check for /saves URL
+    // Sync state when URL query params change
     useEffect(() => {
-        if (typeof window !== 'undefined') {
-            const pathname = window.location.pathname;
-            if (pathname.includes('/saves') || window.location.hash === '#saves') {
-                setActiveTab('saves');
-            }
-        }
-    }, []);
+        setSearchQuery(urlSearch);
+        setActiveTag(urlTag);
+    }, [urlSearch, urlTag]);
 
     // Load friend requests & contacts for logged-in user
     const loadFriendsData = useCallback(() => {
@@ -161,12 +164,75 @@ export default function SocialFeedsPage() {
         fetchPosts(1, false);
     }, [fetchPosts]);
 
+    // Periodic check for new incoming posts in feed (every 12 seconds)
+    useEffect(() => {
+        if (loading || posts.length === 0) return;
+
+        const checkNewPosts = async () => {
+            try {
+                const params = new URLSearchParams();
+                params.set('page', '1');
+                params.set('limit', '10');
+
+                if (activeTab === 'saves') {
+                    params.set('tab', 'saves');
+                } else if (activeTab === 'my-posts' && currentUser?._id) {
+                    params.set('userId', currentUser._id);
+                } else if (activeTab !== 'all') {
+                    params.set('type', activeTab);
+                }
+
+                if (activeTag) params.set('tag', activeTag);
+                if (searchQuery.trim()) params.set('search', searchQuery.trim());
+
+                const res = await fetch(`/api/social-media?${params.toString()}`);
+                if (!res.ok) return;
+                const data = await res.json();
+                const freshPosts: ISocialPostData[] = data.posts || [];
+
+                if (freshPosts.length > 0 && posts.length > 0) {
+                    const existingIds = new Set(posts.map((p) => String(p._id)));
+                    const topPostTime = new Date(posts[0]?.createdAt || 0).getTime();
+
+                    const brandNew = freshPosts.filter((p) => {
+                        if (existingIds.has(String(p._id))) return false;
+                        const pTime = new Date(p.createdAt || 0).getTime();
+                        return pTime >= topPostTime || !existingIds.has(String(p._id));
+                    });
+
+                    if (brandNew.length > 0) {
+                        setNewIncomingPosts(brandNew);
+                    }
+                }
+            } catch {
+                // silent background polling
+            }
+        };
+
+        const interval = setInterval(checkNewPosts, 12000);
+        return () => clearInterval(interval);
+    }, [activeTab, activeTag, searchQuery, currentUser?._id, loading, posts]);
+
+    const handleLoadNewPosts = () => {
+        if (newIncomingPosts.length === 0) return;
+        setPosts((prev) => {
+            const existingIds = new Set(prev.map((p) => String(p._id)));
+            const uniqueNew = newIncomingPosts.filter((p) => !existingIds.has(String(p._id)));
+            return [...uniqueNew, ...prev];
+        });
+        setNewIncomingPosts([]);
+        if (typeof window !== 'undefined') {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    };
+
     const handlePostCreated = (newPost: any) => {
         setPosts((prev) => [newPost, ...prev]);
     };
 
     const handlePostDeleted = (postId: string) => {
         setPosts((prev) => prev.filter((p) => String(p._id) !== postId));
+        setNewIncomingPosts((prev) => prev.filter((p) => String(p._id) !== postId));
     };
 
     return (
@@ -213,38 +279,51 @@ export default function SocialFeedsPage() {
                             )}
                         </div>
 
-                        {/* Navigation Feed Filters */}
+                        {/* Navigation Feed Filters (Direct Animated Links) */}
                         <div className="bg-white rounded-2xl p-2.5 shadow-xs border border-gray-200/80 space-y-1">
                             {[
-                                { id: 'all', label: 'All Feeds', icon: 'solar:feed-bold' },
-                                { id: 'image', label: 'Photos Only', icon: 'solar:gallery-wide-bold' },
-                                { id: 'video', label: 'Videos & Clips', icon: 'solar:videocamera-record-bold' },
-                                { id: 'poll', label: 'Community Polls', icon: 'solar:chart-2-bold' },
-                                { id: 'popular', label: 'Trending & Popular', icon: 'solar:fire-bold' },
+                                { id: 'all', label: 'All Feeds', href: '/', icon: 'solar:feed-bold', color: 'text-blue-500' },
+                                { id: 'video', label: 'Watch Videos', href: '/videos', icon: 'solar:videocamera-record-bold', color: 'text-red-500' },
+                                { id: 'image', label: 'Photos Only', href: '/?type=image', icon: 'solar:gallery-wide-bold', color: 'text-rose-500' },
+                                { id: 'poll', label: 'Community Polls', href: '/?type=poll', icon: 'solar:chart-2-bold', color: 'text-amber-500' },
+                                { id: 'popular', label: 'Trending & Popular', href: '/?type=popular', icon: 'solar:fire-bold', color: 'text-orange-500' },
+                                { id: 'members', label: 'Members Directory', href: '/members', icon: 'solar:users-group-rounded-bold', color: 'text-indigo-500' },
                                 ...(currentUser
                                     ? [
-                                          { id: 'my-posts', label: 'My Posts', icon: 'solar:user-bold' },
-                                          { id: 'saves', label: 'Saved Posts', icon: 'solar:bookmark-bold' },
+                                          { id: 'my-posts', label: 'My Posts', href: '/?type=my-posts', icon: 'solar:user-bold', color: 'text-cyan-500' },
+                                          { id: 'saves', label: 'Saved Posts', href: '/saves', icon: 'solar:bookmark-bold', color: 'text-amber-500' },
                                       ]
                                     : []),
-                            ].map((tab) => (
-                                <button
-                                    key={tab.id}
-                                    type="button"
-                                    onClick={() => {
-                                        setActiveTab(tab.id as FeedTab);
-                                        setActiveTag(null);
-                                    }}
-                                    className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition cursor-pointer ${
-                                        activeTab === tab.id
-                                            ? 'bg-blue-50 text-blue-600 shadow-xs'
-                                            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                                    }`}
-                                >
-                                    <Icon icon={tab.icon} width={18} />
-                                    <span>{tab.label}</span>
-                                </button>
-                            ))}
+                            ].map((item) => {
+                                const isActive = activeTab === item.id;
+                                const targetHref = isActive && item.id !== 'all' ? '/' : item.href;
+
+                                return (
+                                    <Link
+                                        key={item.id}
+                                        href={targetHref}
+                                        className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 group ${
+                                            isActive
+                                                ? 'bg-blue-50 text-blue-600 shadow-2xs translate-x-1'
+                                                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 hover:translate-x-1'
+                                        }`}
+                                    >
+                                        <span className="flex items-center gap-3">
+                                            <Icon
+                                                icon={item.icon}
+                                                width={18}
+                                                className={`transition-transform duration-200 group-hover:scale-110 ${
+                                                    isActive ? 'text-blue-600' : item.color
+                                                }`}
+                                            />
+                                            <span>{item.label}</span>
+                                        </span>
+                                        {isActive && (
+                                            <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse" />
+                                        )}
+                                    </Link>
+                                );
+                            })}
                         </div>
                     </aside>
 
@@ -258,6 +337,25 @@ export default function SocialFeedsPage() {
                             currentUser={currentUser}
                             onPostCreated={handlePostCreated}
                         />
+
+                        {/* Floating New Posts Available Notification Pill */}
+                        {newIncomingPosts.length > 0 && (
+                            <div className="sticky top-20 z-30 flex justify-center py-2 animate-bounce">
+                                <button
+                                    type="button"
+                                    onClick={handleLoadNewPosts}
+                                    className="group flex items-center gap-2.5 px-5 py-2.5 bg-linear-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-bold rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5 active:scale-95 cursor-pointer border border-white/20"
+                                >
+                                    <Icon icon="solar:refresh-circle-bold" width={18} className="animate-spin text-white" />
+                                    <span>
+                                        {newIncomingPosts.length === 1
+                                            ? '1 new post available'
+                                            : `${newIncomingPosts.length} new posts available`} — Click to update
+                                    </span>
+                                    <Icon icon="solar:arrow-up-linear" width={16} className="text-blue-200" />
+                                </button>
+                            </div>
+                        )}
 
                         {/* Active Filter Pill */}
                         {(activeTag || searchQuery) && (
@@ -518,13 +616,9 @@ export default function SocialFeedsPage() {
                             </h3>
                             <div className="flex flex-wrap gap-1.5">
                                 {trendingTags.map((tag) => (
-                                    <button
+                                    <Link
                                         key={tag}
-                                        type="button"
-                                        onClick={() => {
-                                            setActiveTag(tag);
-                                            setActiveTab('all');
-                                        }}
+                                        href={`/?tag=${tag}`}
                                         className={`px-3 py-1 rounded-lg text-xs font-semibold transition cursor-pointer ${
                                             activeTag === tag
                                                 ? 'bg-blue-600 text-white shadow-xs'
@@ -532,7 +626,7 @@ export default function SocialFeedsPage() {
                                         }`}
                                     >
                                         #{tag}
-                                    </button>
+                                    </Link>
                                 ))}
                             </div>
                         </div>

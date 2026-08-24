@@ -22,6 +22,9 @@ import SinglePostPage from "./pages/single-post";
 import SocialHeader from "./ui/SocialHeader";
 import UserProfileDynamicPage from "./profile/UserProfileDynamicPage";
 import SocialLoginPage from "./pages/login";
+import MembersPage from "./pages/members";
+import SavedPage from "./pages/saved";
+import VideosPage from "./pages/videos";
 
 export const PLUGINS: PluginMeta = {
     nx: "social-media",
@@ -35,7 +38,7 @@ export const PLUGINS: PluginMeta = {
 };
 
 export function register() {
-    // ─── Root Pages (Accessible at /feeds, /login, /user/:slug, /profile/:slug, /post/:id) & Layouts ─
+    // ─── Root Pages (Accessible at /feeds, /login, /members, /saves, /user/:slug, /profile/:slug, /post/:id) & Layouts ─
     addHook(
         "root.pages",
         [
@@ -58,6 +61,36 @@ export function register() {
                 position: 10,
                 active: true,
                 component: SocialFeedsPage,
+            },
+            {
+                key: "members",
+                label: "Members Directory",
+                type: "single",
+                slug: "members",
+                style: "left",
+                position: 12,
+                active: true,
+                component: MembersPage,
+            },
+            {
+                key: "saves",
+                label: "Saved Posts Directory",
+                type: "single",
+                slug: "saves",
+                style: "left",
+                position: 15,
+                active: true,
+                component: SavedPage,
+            },
+            {
+                key: "videos",
+                label: "Video Hub Landing Page",
+                type: "single",
+                slug: "videos",
+                style: "left",
+                position: 14,
+                active: true,
+                component: VideosPage,
             },
             {
                 key: "login",
@@ -84,26 +117,6 @@ export function register() {
                 label: "Social Feed",
                 type: "single",
                 slug: "feeds",
-                style: "left",
-                position: 11,
-                active: true,
-                component: SocialFeedsPage,
-            },
-            {
-                key: "social-saves",
-                label: "Social saves",
-                type: "single",
-                slug: "saves",
-                style: "left",
-                position: 11,
-                active: true,
-                component: SocialFeedsPage,
-            },
-            {
-                key: "saves",
-                label: "Saved Posts",
-                type: "single",
-                slug: "saves",
                 style: "left",
                 position: 11,
                 active: true,
