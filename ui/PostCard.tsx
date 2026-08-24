@@ -544,6 +544,7 @@ export default function PostCard({
                             <PollPost
                                 postId={String(currentPost._id)}
                                 poll={currentPost.poll}
+                                currentUser={currentUser}
                                 currentUserId={currentUser?._id}
                                 onVoteUpdated={(updatedPoll) =>
                                     setCurrentPost((prev) => ({ ...prev, poll: updatedPoll }))

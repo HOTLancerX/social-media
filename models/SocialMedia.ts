@@ -13,10 +13,18 @@ export interface IBgStyle {
     pattern?: string;
 }
 
+export interface IPollVoter {
+    userId: string;
+    userName: string;
+    userImage?: string;
+    userSlug?: string;
+}
+
 export interface IPollOption {
     id: string;
     text: string;
     votes: string[]; // array of userIds
+    voters?: IPollVoter[];
 }
 
 export interface IPollData {
@@ -165,11 +173,22 @@ const BgStyleSchema = new Schema<IBgStyle>(
     { _id: false }
 );
 
+const PollVoterSchema = new Schema<IPollVoter>(
+    {
+        userId: { type: String, required: true },
+        userName: { type: String, default: "" },
+        userImage: { type: String, default: "" },
+        userSlug: { type: String, default: "" },
+    },
+    { _id: false }
+);
+
 const PollOptionSchema = new Schema<IPollOption>(
     {
         id: { type: String, required: true },
         text: { type: String, required: true },
         votes: { type: [String], default: [] },
+        voters: { type: [PollVoterSchema], default: [] },
     },
     { _id: false }
 );
