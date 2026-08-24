@@ -25,6 +25,8 @@ import SocialLoginPage from "./pages/login";
 import MembersPage from "./pages/members";
 import SavedPage from "./pages/saved";
 import VideosPage from "./pages/videos";
+import GroupsPage from "./pages/groups";
+import GroupDetailsPage from "./groups/GroupDetailsPage";
 
 export const PLUGINS: PluginMeta = {
     nx: "social-media",
@@ -91,6 +93,36 @@ export function register() {
                 position: 14,
                 active: true,
                 component: VideosPage,
+            },
+            {
+                key: "groups",
+                label: "Community Groups Hub",
+                type: "single",
+                slug: "groups",
+                style: "left",
+                position: 15,
+                active: true,
+                component: GroupsPage,
+            },
+            {
+                key: "group",
+                label: "Group Community Page",
+                type: "group",
+                slug: "prefix",
+                style: "left",
+                position: 16,
+                active: true,
+                component: GroupDetailsPage,
+            },
+            {
+                key: "groups",
+                label: "Group Community Prefix",
+                type: "group",
+                slug: "prefix",
+                style: "left",
+                position: 17,
+                active: true,
+                component: GroupDetailsPage,
             },
             {
                 key: "login",

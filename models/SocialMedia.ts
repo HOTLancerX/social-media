@@ -93,13 +93,15 @@ export interface ISocialPostData {
     commentsCount: number;
     sharesCount: number;
     isPinned: boolean;
-    status: "published" | "draft" | "archived" | "deleted";
+    status: "published" | "draft" | "archived" | "deleted" | "pending_approval";
     tags: string[];
     location?: string;
     feeling?: IFeeling | null;
     source?: "web" | "api" | "auto-post" | "bot";
     scheduledAt?: string | Date | null;
     isScheduled?: boolean;
+    groupId?: string | null;
+    groupName?: string;
     createdAt: string | Date;
     updatedAt?: string | Date;
     userReaction?: string | null;
@@ -128,13 +130,15 @@ export interface ISocialPost extends Document {
     commentsCount: number;
     sharesCount: number;
     isPinned: boolean;
-    status: "published" | "draft" | "archived" | "deleted";
+    status: "published" | "draft" | "archived" | "deleted" | "pending_approval";
     tags: string[];
     location?: string;
-    feeling?: IFeeling;
-    source: "web" | "api" | "auto-post" | "bot";
+    feeling?: IFeeling | null;
+    source?: "web" | "api" | "auto-post" | "bot";
     scheduledAt?: Date | null;
-    isScheduled: boolean;
+    isScheduled?: boolean;
+    groupId?: string | null;
+    groupName?: string;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -288,7 +292,7 @@ const SocialPostSchema = new Schema<ISocialPost>(
         isPinned: { type: Boolean, default: false, index: true },
         status: {
             type: String,
-            enum: ["published", "draft", "archived", "deleted"],
+            enum: ["published", "draft", "archived", "deleted", "pending_approval"],
             default: "published",
             index: true,
         },
@@ -303,6 +307,8 @@ const SocialPostSchema = new Schema<ISocialPost>(
         },
         scheduledAt: { type: Date, default: null },
         isScheduled: { type: Boolean, default: false, index: true },
+        groupId: { type: String, default: null, index: true },
+        groupName: { type: String, default: "" },
     },
     { timestamps: true, collection: "social_posts" }
 );

@@ -172,6 +172,7 @@ export default function SavedPage() {
                             {[
                                 { id: 'all', label: 'All Feeds', href: '/', icon: 'solar:feed-bold', color: 'text-blue-500', active: false },
                                 { id: 'video', label: 'Watch Videos', href: '/videos', icon: 'solar:videocamera-record-bold', color: 'text-red-500', active: false },
+                                { id: 'groups', label: 'Community Groups', href: '/groups', icon: 'solar:users-group-two-rounded-bold', color: 'text-purple-500', active: false },
                                 { id: 'image', label: 'Photos Only', href: '/?type=image', icon: 'solar:gallery-wide-bold', color: 'text-rose-500', active: false },
                                 { id: 'poll', label: 'Community Polls', href: '/?type=poll', icon: 'solar:chart-2-bold', color: 'text-amber-500', active: false },
                                 { id: 'popular', label: 'Trending & Popular', href: '/?type=popular', icon: 'solar:fire-bold', color: 'text-orange-500', active: false },

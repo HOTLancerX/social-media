@@ -136,7 +136,7 @@ export async function POST(req: NextRequest) {
                 {
                     success: true,
                     post: newPost,
-                    permalink: `/feeds#post-${newPost.shortId}`,
+                    permalink: `/feeds#post-${newPost?.shortId || (newPost as any)?._id || ''}`,
                 },
                 { status: 201 }
             );

@@ -28,12 +28,16 @@ interface PostFormProps {
         image?: string;
         type?: string;
     } | null;
+    groupId?: string;
+    groupName?: string;
     onPostCreated?: (newPost: any) => void;
     className?: string;
 }
 
 export default function PostForm({
     currentUser,
+    groupId,
+    groupName,
     onPostCreated,
     className = '',
 }: PostFormProps) {
@@ -244,6 +248,8 @@ export default function PostForm({
                     : null,
             privacy,
             feeling: selectedFeeling,
+            groupId: groupId || null,
+            groupName: groupName || '',
         };
 
         try {

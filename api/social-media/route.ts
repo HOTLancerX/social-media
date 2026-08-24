@@ -4,6 +4,7 @@ import connectDB from "@/lib/mongodb";
 import { getSocialPostModel, type PostType } from "../../models/SocialMedia";
 import { getSocialLikeModel } from "../../models/Like";
 import { getFriendshipModel } from "../../models/Friendship";
+import { getGroupModel } from "../../models/Group";
 import { getUserSavedPostIds } from "../../models/Saves";
 import { getAuthSession } from "@/lib/session";
 
@@ -127,7 +128,49 @@ export async function GET(req: NextRequest) {
 
         const PostModel = getSocialPostModel();
         const Friendship = getFriendshipModel();
-        const query: any = { status: "published" };
+
+        const requestedStatus = searchParams.get("status") || "published";
+        const query: any = { status: requestedStatus };
+
+        const groupId = searchParams.get("groupId");
+
+        if (groupId) {
+            const Group = getGroupModel();
+            const group = await (Group as any).findById(groupId).lean();
+            if (group) {
+                const userIdStr = currentUserId ? String(currentUserId) : '';
+                const isMember =
+                    (group.members as any[])?.some((m: any) => String(m) === userIdStr) ||
+                    (group.admins as any[])?.some((a: any) => String(a) === userIdStr) ||
+                    String(group.creatorId) === userIdStr;
+
+                const isAdmin =
+                    (group.admins as any[])?.some((a: any) => String(a) === userIdStr) ||
+                    (group.moderators as any[])?.some((m: any) => String(m) === userIdStr) ||
+                    String(group.creatorId) === userIdStr;
+
+                // If asking for pending approval posts, must be admin/moderator
+                if (requestedStatus === 'pending_approval' && !isAdmin) {
+                    return NextResponse.json({ posts: [], total: 0, hasMore: false });
+                }
+
+                // If group is private, verify user is a member/admin
+                if (group.privacy === 'private' && !isMember) {
+                    return NextResponse.json({
+                        posts: [],
+                        page,
+                        limit,
+                        total: 0,
+                        hasMore: false,
+                        isPrivateLocked: true,
+                    });
+                }
+            }
+            query.groupId = groupId;
+        } else {
+            // General feed: exclude group posts that belong to groups
+            query.groupId = { $in: [null, undefined, ""] };
+        }
 
         if (authorId) {
             query.userId = authorId;
@@ -278,6 +321,8 @@ export async function POST(req: NextRequest) {
             tags = [],
             location = "",
             feeling = null,
+            groupId = null,
+            groupName = "",
             guestUser = null, // Fallback if guest posting is enabled
         } = body;
 
@@ -372,6 +417,33 @@ export async function POST(req: NextRequest) {
             }
         }
 
+        let postStatus: "published" | "pending_approval" = "published";
+        if (groupId) {
+            const Group = getGroupModel();
+            const group = await (Group as any).findById(groupId);
+            if (group) {
+                const userIdStr = String(userId);
+                if (
+                    (group.bannedUsers || []).some((b: any) => String(b) === userIdStr) ||
+                    (group.blockedUsers || []).some((b: any) => String(b) === userIdStr)
+                ) {
+                    return NextResponse.json(
+                        { error: "You are banned or blocked from posting in this group." },
+                        { status: 403 }
+                    );
+                }
+
+                const isAdminOrMod =
+                    String(group.creatorId) === userIdStr ||
+                    (group.admins || []).some((a: any) => String(a) === userIdStr) ||
+                    (group.moderators || []).some((m: any) => String(m) === userIdStr);
+
+                if (group.postApproval === "admin_approval" && !isAdminOrMod) {
+                    postStatus = "pending_approval";
+                }
+            }
+        }
+
         const PostModel = getSocialPostModel();
         const newPost = await PostModel.create({
             userId,
@@ -403,11 +475,21 @@ export async function POST(req: NextRequest) {
             commentsCount: 0,
             sharesCount: 0,
             isPinned: false,
-            status: "published",
+            status: postStatus,
+            groupId: groupId ? String(groupId) : null,
+            groupName: groupName || "",
         });
 
         return NextResponse.json(
-            { success: true, post: newPost },
+            {
+                success: true,
+                post: newPost,
+                isPendingApproval: postStatus === "pending_approval",
+                message:
+                    postStatus === "pending_approval"
+                        ? "Your post has been submitted and is pending admin approval."
+                        : "Post published successfully!",
+            },
             { status: 201 }
         );
     } catch (error: any) {

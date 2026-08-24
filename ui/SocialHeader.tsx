@@ -198,6 +198,7 @@ export default function SocialHeader({
     const loggedInTabs = [
         { id: 'home', label: 'Website Home', href: '/', icon: 'solar:home-2-bold', active: pathname === '/' },
         { id: 'videos', label: 'Watch Videos', href: '/videos', icon: 'solar:videocamera-record-bold', active: pathname === '/videos' },
+        { id: 'groups', label: 'Groups', href: '/groups', icon: 'solar:users-group-two-rounded-bold', active: pathname.startsWith('/groups') || pathname.startsWith('/group') },
         { id: 'members', label: 'Members', href: '/members', icon: 'solar:users-group-rounded-bold', active: pathname === '/members' },
         { id: 'saves', label: 'Saved', href: '/saves', icon: 'solar:bookmark-bold', active: pathname === '/saves' },
         { id: 'photos', label: 'Photos', href: `${profileUrl}/photos`, icon: 'solar:gallery-wide-bold', active: pathname.endsWith('/photos') },
@@ -206,6 +207,7 @@ export default function SocialHeader({
     const loggedOutTabs = [
         { id: 'home', label: 'Website Home', href: '/', icon: 'solar:home-2-bold', active: pathname === '/' },
         { id: 'videos', label: 'Watch Videos', href: '/videos', icon: 'solar:videocamera-record-bold', active: pathname === '/videos' },
+        { id: 'groups', label: 'Groups', href: '/groups', icon: 'solar:users-group-two-rounded-bold', active: pathname.startsWith('/groups') || pathname.startsWith('/group') },
         { id: 'members', label: 'Members', href: '/members', icon: 'solar:users-group-rounded-bold', active: pathname === '/members' },
         { id: 'popular', label: 'Trending Posts', href: '/?type=popular', icon: 'solar:fire-bold', active: pathname.includes('type=popular') },
     ];

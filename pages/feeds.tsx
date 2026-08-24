@@ -284,6 +284,7 @@ export default function SocialFeedsPage() {
                             {[
                                 { id: 'all', label: 'All Feeds', href: '/', icon: 'solar:feed-bold', color: 'text-blue-500' },
                                 { id: 'video', label: 'Watch Videos', href: '/videos', icon: 'solar:videocamera-record-bold', color: 'text-red-500' },
+                                { id: 'groups', label: 'Community Groups', href: '/groups', icon: 'solar:users-group-two-rounded-bold', color: 'text-purple-500' },
                                 { id: 'image', label: 'Photos Only', href: '/?type=image', icon: 'solar:gallery-wide-bold', color: 'text-rose-500' },
                                 { id: 'poll', label: 'Community Polls', href: '/?type=poll', icon: 'solar:chart-2-bold', color: 'text-amber-500' },
                                 { id: 'popular', label: 'Trending & Popular', href: '/?type=popular', icon: 'solar:fire-bold', color: 'text-orange-500' },
