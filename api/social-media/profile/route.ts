@@ -38,8 +38,8 @@ export async function GET(req: NextRequest) {
         }, {});
 
         // Fetch counts: Friends, Posts, Photos, Videos
-        const Friendship = getFriendshipModel();
-        const SocialPost = getSocialPostModel();
+        const Friendship: any = getFriendshipModel();
+        const SocialPost: any = getSocialPostModel();
 
         const userObjId = mongoose.Types.ObjectId.isValid(user._id) ? new mongoose.Types.ObjectId(String(user._id)) : null;
         const userStrId = String(user._id);
@@ -56,21 +56,21 @@ export async function GET(req: NextRequest) {
         }
 
         const [friendsCount, postsCount, photosCount, videosCount] = await Promise.all([
-            (Friendship as any).countDocuments({
+            Friendship.countDocuments({
                 $or: friendOrConditions,
                 status: 'accepted',
             }),
-            (SocialPost as any).countDocuments({
+            SocialPost.countDocuments({
                 $or: [{ userId: userStrId }, ...(userObjId ? [{ userId: userObjId }] : [])],
                 status: 'published',
             }),
-            (SocialPost as any).countDocuments({
-                userId: String(user._id),
+            SocialPost.countDocuments({
+                userId: userStrId,
                 type: 'image',
                 status: 'published',
             }),
-            (SocialPost as any).countDocuments({
-                userId: String(user._id),
+            SocialPost.countDocuments({
+                userId: userStrId,
                 type: 'video',
                 status: 'published',
             }),

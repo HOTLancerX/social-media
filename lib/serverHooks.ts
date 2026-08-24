@@ -19,8 +19,8 @@ registerServerDataHook('user', async (id, slug, userDoc) => {
         return acc;
     }, {});
 
-    const Friendship = getFriendshipModel();
-    const SocialPost = getSocialPostModel();
+    const Friendship: any = getFriendshipModel();
+    const SocialPost: any = getSocialPostModel();
 
     const userObjId = userDoc._id;
     const userStrId = String(userDoc._id);
