@@ -496,7 +496,10 @@ export default function PostCard({
                     {/* A. Text Post */}
                     {currentPost.type === 'text' && currentPost.content && (
                         <div className="px-4 pb-3">
-                            <TextPost content={currentPost.content} />
+                            <TextPost
+                                content={currentPost.content}
+                                isStandaloneText={!linkPreviewData?.url && !currentPost.sharedPost}
+                            />
                         </div>
                     )}
 

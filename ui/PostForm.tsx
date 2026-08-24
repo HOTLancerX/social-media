@@ -279,271 +279,68 @@ export default function PostForm({
 
     return (
         <>
-            {/* Top Composer Card (Matches Image UI) */}
-            <div className={`bg-white rounded-2xl shadow-xs border border-gray-200/80 overflow-hidden ${className}`}>
-                {/* 1. Header Tabs: Publish | Albums | Poll */}
-                <div className="flex items-center border-b border-gray-100 bg-gray-50/50">
+            {/* Top Composer Card (Matches Facebook Clean Pill UI) */}
+            <div
+                className={`bg-white rounded-full shadow-xs border border-gray-200/80 p-3 sm:p-3.5 flex items-center gap-3 ${className}`}
+            >
+                {/* 1. Left: Hex Profile Avatar */}
+                <div
+                    onClick={() => openModalWithType('text')}
+                    className="shrink-0 cursor-pointer"
+                >
+                    <HexAvatar
+                        image={currentUser?.image}
+                        name={currentUser?.name}
+                        size="sm"
+                        isOnline={true}
+                        showLiveDot={false}
+                        showStatusOrLevel={false}
+                        className="hover:scale-105 transition"
+                    />
+                </div>
+
+                {/* 2. Middle: Search-pill Style Input Button */}
+                <button
+                    type="button"
+                    onClick={() => openModalWithType('text')}
+                    className="flex-1 bg-gray-100/85 hover:bg-gray-200/75 text-gray-500 hover:text-gray-700 text-xs sm:text-sm font-normal rounded-full px-4 py-2.5 sm:py-2.5 text-left transition cursor-pointer flex items-center truncate shadow-2xs"
+                >
+                    <span className="truncate">
+                        What&apos;s on your mind, {currentUser?.name ? currentUser.name.split(' ')[0] : 'friend'}?
+                    </span>
+                </button>
+
+                {/* 3. Right: 3 Colorful Action Buttons */}
+                <div className="flex items-center gap-0.5 sm:gap-1 shrink-0">
+                    {/* Live Video / Video (Red) */}
                     <button
                         type="button"
-                        onClick={() => setPostType('text')}
-                        className={`flex-1 py-3 px-4 text-xs font-bold flex items-center justify-center gap-2 transition cursor-pointer relative ${
-                            postType === 'text' || postType === 'text-bg'
-                                ? 'text-blue-600 bg-white'
-                                : 'text-gray-500 hover:text-gray-800'
-                        }`}
+                        onClick={() => openModalWithType('video')}
+                        className="p-2 text-[#e41e3f] hover:bg-red-50 rounded-full transition cursor-pointer"
+                        title="Live Video"
                     >
-                        <Icon icon="solar:pen-new-square-bold" width={18} />
-                        <span>Publish</span>
-                        {(postType === 'text' || postType === 'text-bg') && (
-                            <span className="absolute bottom-0 inset-x-0 h-0.5 bg-blue-600" />
-                        )}
+                        <Icon icon="solar:videocamera-record-bold" width={24} className="text-[#e41e3f]" />
                     </button>
 
+                    {/* Photo / Gallery (Green) */}
                     <button
                         type="button"
                         onClick={() => openModalWithType('image')}
-                        className={`flex-1 py-3 px-4 text-xs font-bold flex items-center justify-center gap-2 transition cursor-pointer relative ${
-                            postType === 'image'
-                                ? 'text-blue-600 bg-white'
-                                : 'text-gray-500 hover:text-gray-800'
-                        }`}
+                        className="p-2 text-[#45bd62] hover:bg-emerald-50 rounded-full transition cursor-pointer"
+                        title="Photo / Gallery"
                     >
-                        <Icon icon="solar:gallery-wide-bold" width={18} />
-                        <span>Albums</span>
-                        {postType === 'image' && (
-                            <span className="absolute bottom-0 inset-x-0 h-0.5 bg-blue-600" />
-                        )}
+                        <Icon icon="solar:gallery-wide-bold" width={24} className="text-[#45bd62]" />
                     </button>
 
+                    {/* Reel / Video (Pink) */}
                     <button
                         type="button"
                         onClick={() => openModalWithType('poll')}
-                        className={`flex-1 py-3 px-4 text-xs font-bold flex items-center justify-center gap-2 transition cursor-pointer relative ${
-                            postType === 'poll'
-                                ? 'text-blue-600 bg-white'
-                                : 'text-gray-500 hover:text-gray-800'
-                        }`}
+                        className="p-2 text-[#f3425f] hover:bg-rose-50 rounded-full transition cursor-pointer"
+                        title="Poll / Interactive"
                     >
-                        <Icon icon="solar:chart-square-bold" width={18} />
-                        <span>Poll</span>
-                        {postType === 'poll' && (
-                            <span className="absolute bottom-0 inset-x-0 h-0.5 bg-blue-600" />
-                        )}
+                        <Icon icon="solar:clapperboard-play-bold" width={24} className="text-[#f3425f]" />
                     </button>
-                </div>
-
-                {/* 2. Composer Body */}
-                <div className="p-4 space-y-3">
-                    <div className="flex items-start gap-3">
-                        <HexAvatar
-                            image={currentUser?.image}
-                            name={currentUser?.name}
-                            size="sm"
-                            isOnline={true}
-                            showLiveDot={false}
-                            showStatusOrLevel={false}
-                            className="mt-1"
-                        />
-
-                        <textarea
-                            rows={3}
-                            value={content}
-                            onChange={(e) => setContent(e.target.value)}
-                            placeholder={`Write something or paste a link here, ${currentUser?.name || ''}...`}
-                            className="w-full text-xs md:text-sm text-gray-800 placeholder-gray-400 bg-transparent border-0 outline-none resize-none pt-2"
-                        />
-                    </div>
-
-                    {/* Manual Link Input Bar */}
-                    {showLinkInput && (
-                        <div className="p-3 bg-blue-50/70 border border-blue-200 rounded-2xl flex items-center gap-2 animate-in fade-in">
-                            <Icon icon="solar:link-circle-bold" className="text-blue-600 shrink-0" width={20} />
-                            <input
-                                type="url"
-                                placeholder="Paste website or product link (https://...)"
-                                value={customLinkInput}
-                                onChange={(e) => setCustomLinkInput(e.target.value)}
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter') {
-                                        e.preventDefault();
-                                        fetchLinkMetadata(customLinkInput.trim());
-                                    }
-                                }}
-                                className="flex-1 text-xs bg-white px-3 py-1.5 rounded-xl border border-gray-200 outline-none focus:border-blue-500"
-                            />
-                            <button
-                                type="button"
-                                onClick={() => fetchLinkMetadata(customLinkInput.trim())}
-                                disabled={fetchingLink || !customLinkInput.trim()}
-                                className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition cursor-pointer disabled:opacity-50 flex items-center gap-1 shrink-0"
-                            >
-                                {fetchingLink ? <Icon icon="line-md:loading-twotone-loop" width={14} /> : 'Fetch'}
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setShowLinkInput(false)}
-                                className="p-1 text-gray-400 hover:text-gray-600 rounded-full"
-                            >
-                                <Icon icon="solar:close-circle-bold" width={18} />
-                            </button>
-                        </div>
-                    )}
-
-                    {/* Loading Link Preview Indicator */}
-                    {fetchingLink && (
-                        <div className="p-3 rounded-2xl bg-gray-50 border border-gray-200 flex items-center gap-2.5 text-xs text-blue-600 animate-pulse">
-                            <Icon icon="line-md:loading-twotone-loop" width={18} />
-                            <span className="font-semibold">Fetching website & product metadata...</span>
-                        </div>
-                    )}
-
-                    {/* Rich Link / Product Preview Card in Feed Composer */}
-                    {linkPreview && (
-                        <div className="relative rounded-2xl overflow-hidden border border-gray-200 bg-gray-50/80 group">
-                            <button
-                                type="button"
-                                onClick={handleDismissLinkPreview}
-                                className="absolute top-2 right-2 z-10 w-7 h-7 rounded-full bg-black/70 hover:bg-black text-white flex items-center justify-center transition shadow-md cursor-pointer"
-                                title="Remove link preview"
-                            >
-                                <Icon icon="solar:close-circle-bold" width={18} />
-                            </button>
-
-                            {linkPreview.image && (
-                                <div className="w-full aspect-[2.2/1] overflow-hidden bg-slate-900 relative">
-                                    <img
-                                        src={linkPreview.image}
-                                        alt={linkPreview.title || 'Preview'}
-                                        className="w-full h-full object-cover"
-                                    />
-                                    {linkPreview.price && (
-                                        <div className="absolute top-3 left-3 px-3 py-1 bg-emerald-600 text-white font-black text-xs rounded-full shadow-lg flex items-center gap-1 border border-white/20">
-                                            <Icon icon="solar:tag-price-bold" width={14} />
-                                            <span>
-                                                {linkPreview.currency ? `${linkPreview.currency} ` : ''}
-                                                {linkPreview.price}
-                                            </span>
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-
-                            <div className="p-3 space-y-1">
-                                <div className="flex items-center gap-1.5 text-[11px] font-bold text-gray-500 uppercase">
-                                    {linkPreview.favicon && (
-                                        <img src={linkPreview.favicon} alt="" className="w-3.5 h-3.5 rounded-xs" />
-                                    )}
-                                    <span>{linkPreview.siteName || linkPreview.url}</span>
-                                </div>
-                                <h4 className="font-bold text-gray-900 text-xs md:text-sm line-clamp-1">
-                                    {linkPreview.title || linkPreview.url}
-                                </h4>
-                                {linkPreview.description && (
-                                    <p className="text-[11px] text-gray-500 line-clamp-2">
-                                        {linkPreview.description}
-                                    </p>
-                                )}
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Selected Image/Video Thumbnails Preview */}
-                    {images.length > 0 && (
-                        <div className="flex items-center gap-2 overflow-x-auto py-2">
-                            {images.map((img, i) => (
-                                <div key={i} className="relative w-16 h-16 rounded-xl overflow-hidden shrink-0 border border-gray-200">
-                                    <img src={img} alt="Upload" className="w-full h-full object-cover" />
-                                    <button
-                                        type="button"
-                                        onClick={() => setImages(images.filter((_, idx) => idx !== i))}
-                                        className="absolute top-1 right-1 w-4 h-4 bg-black/70 text-white rounded-full flex items-center justify-center text-[10px]"
-                                    >
-                                        ✕
-                                    </button>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
-
-                {/* 3. Bottom Toolbar */}
-                <div className="p-3 bg-gray-50/70 border-t border-gray-100 flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-1">
-                        <button
-                            type="button"
-                            onClick={() => openModalWithType('text')}
-                            title="Add feeling / emoji"
-                            className="p-2 rounded-xl text-gray-500 hover:text-amber-600 hover:bg-amber-50 transition cursor-pointer"
-                        >
-                            <Icon icon="solar:emoji-funny-circle-bold" width={20} className="text-amber-500" />
-                        </button>
-
-                        <button
-                            type="button"
-                            onClick={() => openModalWithType('image')}
-                            title="Upload photo"
-                            className="p-2 rounded-xl text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 transition cursor-pointer"
-                        >
-                            <Icon icon="solar:gallery-wide-bold" width={20} className="text-emerald-500" />
-                        </button>
-
-                        <button
-                            type="button"
-                            onClick={() => openModalWithType('video')}
-                            title="Add video"
-                            className="p-2 rounded-xl text-gray-500 hover:text-rose-600 hover:bg-rose-50 transition cursor-pointer"
-                        >
-                            <Icon icon="solar:videocamera-record-bold" width={20} className="text-rose-500" />
-                        </button>
-
-                        <button
-                            type="button"
-                            onClick={() => setShowLinkInput((prev) => !prev)}
-                            title="Embed Web or Product Link"
-                            className={`p-2 rounded-xl transition cursor-pointer ${
-                                showLinkInput || linkPreview
-                                    ? 'bg-blue-100 text-blue-700 font-bold'
-                                    : 'text-gray-500 hover:text-blue-600 hover:bg-blue-50'
-                            }`}
-                        >
-                            <Icon icon="solar:link-circle-bold" width={20} className="text-blue-500" />
-                        </button>
-
-                        <button
-                            type="button"
-                            onClick={() => openModalWithType('text-bg')}
-                            title="Colorful card"
-                            className="p-2 rounded-xl text-gray-500 hover:text-violet-600 hover:bg-violet-50 transition cursor-pointer"
-                        >
-                            <Icon icon="solar:pallete-2-bold" width={20} className="text-violet-500" />
-                        </button>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                        <select
-                            value={privacy}
-                            onChange={(e) => setPrivacy(e.target.value as any)}
-                            className="text-[11px] font-semibold bg-white text-gray-700 rounded-xl px-2.5 py-1.5 border border-gray-200 outline-none cursor-pointer"
-                        >
-                            <option value="public">🌐 Public</option>
-                            <option value="members">👥 Members</option>
-                            <option value="private">🔒 Private</option>
-                        </select>
-
-                        <button
-                            type="button"
-                            onClick={content.trim() || images.length > 0 || videoUrl || linkPreview ? handleSubmit : () => openModalWithType('text')}
-                            disabled={submitting}
-                            className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-md shadow-indigo-600/20 transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
-                        >
-                            {submitting ? (
-                                <Icon icon="line-md:loading-twotone-loop" width={16} />
-                            ) : (
-                                <Icon icon="solar:plain-bold" width={16} />
-                            )}
-                            <span>Post</span>
-                        </button>
-                    </div>
                 </div>
             </div>
 
